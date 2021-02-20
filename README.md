@@ -1,2 +1,1 @@
-# MarkowitzPortfolio
 A Flutter Application
