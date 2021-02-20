@@ -62,7 +62,7 @@ class _TestPageState extends State<TestPage> {
                 size: 35.0,
               ),
               onPressed: () {}),
-          // Falta definir a colocar a função do menu quando selecionado no onTap
+          // Falta definir a colocar a function do menu quando selecionado no onTap
         ],
       ),
       body: Column(
