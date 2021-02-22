@@ -39,8 +39,12 @@ const tablePortfolioStocks = SqfEntityTable(
     useSoftDeleting: true,
     modelName: null,
     fields: [
-      SqfEntityField('portfolioId', DbType.integer),
-      SqfEntityField('stockId', DbType.integer),
+      SqfEntityFieldRelationship(
+          parentTable: tablePortfolios,
+          deleteRule: DeleteRule.CASCADE),
+      SqfEntityFieldRelationship(
+          parentTable: tableStocks,
+          deleteRule: DeleteRule.CASCADE),
     ]
 );
 
