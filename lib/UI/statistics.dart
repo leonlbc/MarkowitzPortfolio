@@ -60,9 +60,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  FloatingActionButton(
-                      onPressed: null,
-                      child: Text("Stocks")),
+                  FloatingActionButton(onPressed: null, child: Text("Stocks")),
                   FloatingActionButton(
                     onPressed: null,
                     child: Text("Brief"),
@@ -80,34 +78,33 @@ class _StatisticsPageState extends State<StatisticsPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.5)),
-                        color: Colors.purple[900],
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              alignment: Alignment.center,
-                              child: Text("Graphic Here"),
-                            ),
-                            Card(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.5)),
-                              color: Colors.grey,
-                              child: Row(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(7.5)),
+                          color: Colors.purple[900],
+                          child: Column(
+                            children: <Widget>[
+                              Container(
+                                alignment: Alignment.center,
+                                child: Text("Graphic Here"),
                               ),
-                            ),
-                            Card(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.5)),
-                              color: Colors.grey,
-                              child: Row(),
-                            )
-                          ],
-                        )
-                        ),
+                              Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(7.5)),
+                                color: Colors.grey,
+                                child: Row(),
+                              ),
+                              Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(7.5)),
+                                color: Colors.grey,
+                                child: Row(),
+                              )
+                            ],
+                          )),
                     ],
                   ),
                 ),
               )
-            ]
-            )
-        )
-    );
+            ])));
   }
 }

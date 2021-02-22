@@ -31,11 +31,15 @@ dependencies:
   http: ^0.12.0+2
   sqflite: ^1.3.0
   path_provider: 1.6.27
+  flutter_datetime_picker: ^1.2.8
+  sqfentity: ^1.2.3
+  sqfentity_gen: ^1.2.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  build_runner: ^1.6.5
+  build_verify: ^1.1.0
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

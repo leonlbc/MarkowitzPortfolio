@@ -63,7 +63,7 @@ class _MonteCarloPageState extends State<MonteCarloPage> {
                     child: Container(
                       alignment: Alignment.center,
                       height: 150.0,
-                      child: Text("Inser Graphic Here"),
+                      child: Text("Insert Graphic Here"),
                     ),
               ),
               ),

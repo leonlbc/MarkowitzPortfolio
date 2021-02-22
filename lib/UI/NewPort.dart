@@ -3,8 +3,6 @@ import 'dart:ffi';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-import '../helpers.dart';
 import 'stock.dart';
 
 String _search;
@@ -13,14 +11,12 @@ dynamic name;
 dynamic price;
 dynamic variation;
 
-class HomePage0 extends StatefulWidget {
+class NewPortfolioPage extends StatefulWidget {
   @override
-  _HomePage0State createState() => _HomePage0State();
+  _NewPortfolioPageState createState() => _NewPortfolioPageState();
 }
 
-class _HomePage0State extends State<HomePage0> {
-  Helper helper = Helper();
-
+class _NewPortfolioPageState extends State<NewPortfolioPage> {
 
   @override
   void initState() {
@@ -32,8 +28,6 @@ class _HomePage0State extends State<HomePage0> {
         "https://api.hgbrasil.com/finance/stock_price?key=aeedac9c&symbol=$_search");
     return (json.decode(response.body));
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -85,68 +79,73 @@ class _HomePage0State extends State<HomePage0> {
     );
   }
 
+  /*
 
-  /*_creatingCards(){
-    Widget build (BuildContext context){
+  _creatingCards() {
+    Widget build(BuildContext context) {
       return Scaffold(
         body: FutureBuilder<List<Stock>>(
-          future: helper.getAllStocks(),
-          builder: (BuildContext context, AsyncSnapshot <List<Stock>> snapshot){
-            if (snapshot.hasData){
-              return ListView.builder(itemCount: snapshot.data.length,
-                  itemBuilder: (BuildContext context, int index){
-                    Stock item = snapshot.data[index];
-                    return GestureDetector(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
-                        child: Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.5)),
-                          color: Colors.purple[900],
-                          child: Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Text(item.ticker, style: TextStyle(
-                                        fontSize: 25.0)),
-                                    Text(item.price, style: TextStyle(
-                                        fontSize: 25.0))
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Text(item.name, style: TextStyle(
-                                        fontSize: 25.0)),
-                                    Text(item.variation, style: TextStyle(
-                                        fontSize: 25.0))
-                                  ],
-                                ),
-                              ],
+            /*ARRUMAR V*/
+            future: helper.getAllStocks(),
+            builder:
+                (BuildContext context, AsyncSnapshot<List<Stock>> snapshot) {
+              if (snapshot.hasData) {
+                return ListView.builder(
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      Stock item = snapshot.data[index];
+                      return GestureDetector(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(7.5)),
+                            color: Colors.purple[900],
+                            child: Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(item.ticker,
+                                          style: TextStyle(fontSize: 25.0)),
+                                      Text(item.price,
+                                          style: TextStyle(fontSize: 25.0))
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(item.name,
+                                          style: TextStyle(fontSize: 25.0)),
+                                      Text(item.variation,
+                                          style: TextStyle(fontSize: 25.0))
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }
-              );
-            } else {
-              return Column(
-                children: <Widget>[
-                  Text("Error", style: TextStyle(color: Colors.white))
-                ],
-              );
-            }
-          }
-        ),
+                      );
+                    });
+              } else {
+                return Column(
+                  children: <Widget>[
+                    Text("Error", style: TextStyle(color: Colors.white))
+                  ],
+                );
+              }
+            }),
       );
     }
-  }*/
-
-
+  }
+*/
   _addStock() {
     if (_search != null) {
       return FutureBuilder<Map>(
@@ -171,13 +170,14 @@ class _HomePage0State extends State<HomePage0> {
                   ticker = snapshot.data["results"]["$_search"]["symbol"];
                   name = snapshot.data["results"]["$_search"]["company_name"];
                   price = snapshot.data["results"]["$_search"]["price"];
-                  variation =
-                      snapshot.data["results"]["$_search"]["change_percent"];
-                 /* helper.newStock(Stock(
+                  variation = snapshot.data["results"]["$_search"]["change_percent"];
+                  /*
+                  helper.newStock(Stock(
                       ticker: ticker,
                       name: name,
                       price: price,
-                      variation: variation));*/
+                      variation: variation));
+                  */
                   return null;
                 }
             }
@@ -193,7 +193,5 @@ class _HomePage0State extends State<HomePage0> {
         ],
       );
     }
-
-
   }
 }

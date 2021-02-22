@@ -3,26 +3,32 @@ import 'package:witz/UI/HomePage.dart';
 import 'package:witz/UI/MonteCarlo.dart';
 import 'package:witz/UI/NewPort.dart';
 
-class testPage extends StatefulWidget {
+class Navigation extends StatefulWidget {
   @override
-  _testPageState createState() => _testPageState();
+  _NavigationState createState() => _NavigationState();
 }
 
-class _testPageState extends State<testPage> {
+class _NavigationState extends State<Navigation> {
 
   int _indexStart = 1;
 
   final List<Widget> _telas = [
     MonteCarloPage(),
     HomePage(),
-    HomePage0(),
+    NewPortfolioPage(),
   ];
+
+  void onTappedTab(int index) {
+    setState(() {
+      _indexStart = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black54,
-      body: _telas[_indexStart],
+        backgroundColor: Colors.black54,
+        body: _telas[_indexStart],
         bottomNavigationBar: BottomNavigationBar(
             backgroundColor: Colors.black54,
             currentIndex: _indexStart,
@@ -51,10 +57,5 @@ class _testPageState extends State<testPage> {
               ),
             ])
     );
-  }
-  void onTappedTab(int index) {
-    setState(() {
-      _indexStart = index;
-    });
   }
 }
