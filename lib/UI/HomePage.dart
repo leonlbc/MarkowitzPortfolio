@@ -94,10 +94,10 @@ class _HomePageState extends State<HomePage> {
                                       MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
                                     Text(
-                                      "$ticker",
+                                      "ITSA4",
                                       style: TextStyle(fontSize: 25.0),
                                     ),
-                                    Text("$price",
+                                    Text("5.50",
                                         style: TextStyle(fontSize: 25.0))
                                   ],
                                 ),
@@ -105,9 +105,9 @@ class _HomePageState extends State<HomePage> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Text("$name",
+                                    Text("ITSA4",
                                         style: TextStyle(fontSize: 20.0)),
-                                    Text("$variation%",
+                                    Text("5%",
                                         style: TextStyle(
                                             fontSize: 20.0,
                                             color: Colors.red[900]))

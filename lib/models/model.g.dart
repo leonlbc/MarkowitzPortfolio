@@ -27,7 +27,7 @@ class TableStock extends SqfEntityTableBase {
     tableName = 'stocks';
     primaryKeyName = 'id';
     primaryKeyType = PrimaryKeyType.integer_auto_incremental;
-    useSoftDeleting = true;
+    useSoftDeleting = false;
     // when useSoftDeleting is true, creates a field named 'isDeleted' on the table, and set to '1' this field when item deleted (does not hard delete)
 
     // declare fields
@@ -52,7 +52,7 @@ class TablePortfolio extends SqfEntityTableBase {
     tableName = 'portfolios';
     primaryKeyName = 'id';
     primaryKeyType = PrimaryKeyType.integer_auto_incremental;
-    useSoftDeleting = true;
+    useSoftDeleting = false;
     // when useSoftDeleting is true, creates a field named 'isDeleted' on the table, and set to '1' this field when item deleted (does not hard delete)
 
     // declare fields
@@ -67,14 +67,14 @@ class TablePortfolio extends SqfEntityTableBase {
   }
 }
 
-// Portfolio_stock TABLE
-class TablePortfolio_stock extends SqfEntityTableBase {
-  TablePortfolio_stock() {
+// Portfoliostock TABLE
+class TablePortfoliostock extends SqfEntityTableBase {
+  TablePortfoliostock() {
     // declare properties of EntityTable
-    tableName = 'portfolio_stock';
+    tableName = 'portfoliostock';
     primaryKeyName = 'id';
     primaryKeyType = PrimaryKeyType.integer_auto_incremental;
-    useSoftDeleting = true;
+    useSoftDeleting = false;
     // when useSoftDeleting is true, creates a field named 'isDeleted' on the table, and set to '1' this field when item deleted (does not hard delete)
 
     // declare fields
@@ -93,7 +93,7 @@ class TablePortfolio_stock extends SqfEntityTableBase {
   }
   static SqfEntityTableBase _instance;
   static SqfEntityTableBase get getInstance {
-    return _instance = _instance ?? TablePortfolio_stock();
+    return _instance = _instance ?? TablePortfoliostock();
   }
 }
 // END TABLES
@@ -107,7 +107,7 @@ class DbModel extends SqfEntityModelProvider {
     databaseTables = [
       TableStock.getInstance,
       TablePortfolio.getInstance,
-      TablePortfolio_stock.getInstance,
+      TablePortfoliostock.getInstance,
     ];
 
     bundledDatabasePath = dbModel
@@ -124,21 +124,13 @@ class DbModel extends SqfEntityModelProvider {
 // BEGIN ENTITIES
 // region Stock
 class Stock {
-  Stock(
-      {this.id,
-      this.ticker,
-      this.name,
-      this.price,
-      this.variation,
-      this.isDeleted}) {
+  Stock({this.id, this.ticker, this.name, this.price, this.variation}) {
     _setDefaultValues();
   }
-  Stock.withFields(
-      this.ticker, this.name, this.price, this.variation, this.isDeleted) {
+  Stock.withFields(this.ticker, this.name, this.price, this.variation) {
     _setDefaultValues();
   }
-  Stock.withId(this.id, this.ticker, this.name, this.price, this.variation,
-      this.isDeleted) {
+  Stock.withId(this.id, this.ticker, this.name, this.price, this.variation) {
     _setDefaultValues();
   }
   Stock.fromMap(Map<String, dynamic> o, {bool setDefaultValues = true}) {
@@ -158,9 +150,6 @@ class Stock {
     if (o['variation'] != null) {
       variation = double.tryParse(o['variation'].toString());
     }
-    isDeleted = o['isDeleted'] != null
-        ? o['isDeleted'] == 1 || o['isDeleted'] == true
-        : null;
   }
   // FIELDS (Stock)
   int id;
@@ -168,23 +157,22 @@ class Stock {
   String name;
   double price;
   double variation;
-  bool isDeleted;
 
   BoolResult saveResult;
   // end FIELDS (Stock)
 
 // COLLECTIONS & VIRTUALS (Stock)
   /// to load children of items to this field, use preload parameter. Ex: toList(preload:true) or toSingle(preload:true) or getById(preload:true)
-  /// You can also specify this object into certain preload fields. Ex: toList(preload:true, preloadFields:['plPortfolio_stocks', 'plField2'..]) or so on..
-  List<Portfolio_stock> plPortfolio_stocks;
+  /// You can also specify this object into certain preload fields. Ex: toList(preload:true, preloadFields:['plPortfoliostocks', 'plField2'..]) or so on..
+  List<Portfoliostock> plPortfoliostocks;
 
-  /// get Portfolio_stock(s) filtered by id=stocksId
-  Portfolio_stockFilterBuilder getPortfolio_stocks(
+  /// get Portfoliostock(s) filtered by id=stocksId
+  PortfoliostockFilterBuilder getPortfoliostocks(
       {List<String> columnsToSelect, bool getIsDeleted}) {
     if (id == null) {
       return null;
     }
-    return Portfolio_stock()
+    return Portfoliostock()
         .select(columnsToSelect: columnsToSelect, getIsDeleted: getIsDeleted)
         .stocksId
         .equals(id)
@@ -193,7 +181,7 @@ class Stock {
 
 // END COLLECTIONS & VIRTUALS (Stock)
 
-  static const bool _softDeleteActivated = true;
+  static const bool _softDeleteActivated = false;
   StockManager __mnStock;
 
   StockManager get _mnStock {
@@ -223,10 +211,6 @@ class Stock {
       map['variation'] = variation;
     }
 
-    if (isDeleted != null) {
-      map['isDeleted'] = forQuery ? (isDeleted ? 1 : 0) : isDeleted;
-    }
-
     return map;
   }
 
@@ -254,13 +238,9 @@ class Stock {
       map['variation'] = variation;
     }
 
-    if (isDeleted != null) {
-      map['isDeleted'] = forQuery ? (isDeleted ? 1 : 0) : isDeleted;
-    }
-
 // COLLECTIONS (Stock)
     if (!forQuery) {
-      map['Portfolio_stocks'] = await getPortfolio_stocks().toMapList();
+      map['Portfoliostocks'] = await getPortfoliostocks().toMapList();
     }
 // END COLLECTIONS (Stock)
 
@@ -278,11 +258,11 @@ class Stock {
   }
 
   List<dynamic> toArgs() {
-    return [ticker, name, price, variation, isDeleted];
+    return [ticker, name, price, variation];
   }
 
   List<dynamic> toArgsWithIds() {
-    return [id, ticker, name, price, variation, isDeleted];
+    return [id, ticker, name, price, variation];
   }
 
   static Future<List<Stock>> fromWebUrl(String url,
@@ -329,12 +309,12 @@ class Stock {
       // RELATIONSHIPS PRELOAD CHILD
       if (preload) {
         loadedFields = loadedFields ?? [];
-        if (/*!_loadedFields.contains('stocks.plPortfolio_stocks') && */ (preloadFields ==
+        if (/*!_loadedFields.contains('stocks.plPortfoliostocks') && */ (preloadFields ==
                 null ||
-            preloadFields.contains('plPortfolio_stocks'))) {
-          /*_loadedFields.add('stocks.plPortfolio_stocks'); */
-          obj.plPortfolio_stocks = obj.plPortfolio_stocks ??
-              await obj.getPortfolio_stocks().toList(
+            preloadFields.contains('plPortfoliostocks'))) {
+          /*_loadedFields.add('stocks.plPortfoliostocks'); */
+          obj.plPortfoliostocks = obj.plPortfoliostocks ??
+              await obj.getPortfoliostocks().toList(
                   preload: preload,
                   preloadFields: preloadFields,
                   loadParents: false /*, loadedFields:_loadedFields*/);
@@ -379,12 +359,12 @@ class Stock {
       // RELATIONSHIPS PRELOAD CHILD
       if (preload) {
         loadedFields = loadedFields ?? [];
-        if (/*!_loadedFields.contains('stocks.plPortfolio_stocks') && */ (preloadFields ==
+        if (/*!_loadedFields.contains('stocks.plPortfoliostocks') && */ (preloadFields ==
                 null ||
-            preloadFields.contains('plPortfolio_stocks'))) {
-          /*_loadedFields.add('stocks.plPortfolio_stocks'); */
-          obj.plPortfolio_stocks = obj.plPortfolio_stocks ??
-              await obj.getPortfolio_stocks().toList(
+            preloadFields.contains('plPortfoliostocks'))) {
+          /*_loadedFields.add('stocks.plPortfoliostocks'); */
+          obj.plPortfoliostocks = obj.plPortfoliostocks ??
+              await obj.getPortfoliostocks().toList(
                   preload: preload,
                   preloadFields: preloadFields,
                   loadParents: false /*, loadedFields:_loadedFields*/);
@@ -424,7 +404,7 @@ class Stock {
   ///
   /// Returns a <List<BoolResult>>
   static Future<List<dynamic>> saveAll(List<Stock> stocks) async {
-    // final results = _mnStock.saveAll('INSERT OR REPLACE INTO stocks (id,ticker, name, price, variation,isDeleted)  VALUES (?,?,?,?,?,?)',stocks);
+    // final results = _mnStock.saveAll('INSERT OR REPLACE INTO stocks (id,ticker, name, price, variation)  VALUES (?,?,?,?,?)',stocks);
     // return results; removed in sqfentity_gen 1.3.0+6
     await DbModel().batchStart();
     for (final obj in stocks) {
@@ -447,8 +427,8 @@ class Stock {
   Future<int> upsert() async {
     try {
       if (await _mnStock.rawInsert(
-              'INSERT OR REPLACE INTO stocks (id,ticker, name, price, variation,isDeleted)  VALUES (?,?,?,?,?,?)',
-              [id, ticker, name, price, variation, isDeleted]) ==
+              'INSERT OR REPLACE INTO stocks (id,ticker, name, price, variation)  VALUES (?,?,?,?,?)',
+              [id, ticker, name, price, variation]) ==
           1) {
         saveResult = BoolResult(
             success: true, successMessage: 'Stock id=$id updated successfully');
@@ -472,7 +452,7 @@ class Stock {
   /// Returns a BoolCommitResult
   Future<BoolCommitResult> upsertAll(List<Stock> stocks) async {
     final results = await _mnStock.rawInsertAll(
-        'INSERT OR REPLACE INTO stocks (id,ticker, name, price, variation,isDeleted)  VALUES (?,?,?,?,?,?)',
+        'INSERT OR REPLACE INTO stocks (id,ticker, name, price, variation)  VALUES (?,?,?,?,?)',
         stocks);
     return results;
   }
@@ -484,7 +464,7 @@ class Stock {
     print('SQFENTITIY: delete Stock invoked (id=$id)');
     var result = BoolResult();
     {
-      result = await Portfolio_stock()
+      result = await Portfoliostock()
           .select()
           .stocksId
           .equals(id)
@@ -494,40 +474,13 @@ class Stock {
     if (!result.success) {
       return result;
     }
-    if (!_softDeleteActivated || hardDelete || isDeleted) {
+    if (!_softDeleteActivated || hardDelete) {
       return _mnStock
           .delete(QueryParams(whereString: 'id=?', whereArguments: [id]));
     } else {
       return _mnStock.updateBatch(
           QueryParams(whereString: 'id=?', whereArguments: [id]),
           {'isDeleted': 1});
-    }
-  }
-
-  /// Recover Stock>
-
-  /// <returns>BoolResult res.success=Recovered, not res.success=Can not recovered
-  Future<BoolResult> recover([bool recoverChilds = true]) async {
-    print('SQFENTITIY: recover Stock invoked (id=$id)');
-    var result = BoolResult();
-    if (recoverChilds) {
-      result = await Portfolio_stock()
-          .select(getIsDeleted: true)
-          .isDeleted
-          .equals(true)
-          .and
-          .stocksId
-          .equals(id)
-          .and
-          .update({'isDeleted': 0});
-    }
-    if (!result.success && recoverChilds) {
-      return result;
-    }
-    {
-      return _mnStock.updateBatch(
-          QueryParams(whereString: 'id=?', whereArguments: [id]),
-          {'isDeleted': 0});
     }
   }
 
@@ -545,9 +498,7 @@ class Stock {
       ..qparams.distinct = true;
   }
 
-  void _setDefaultValues() {
-    isDeleted = isDeleted ?? false;
-  }
+  void _setDefaultValues() {}
   // END METHODS
   // CUSTOM CODES
   /*
@@ -979,11 +930,6 @@ class StockFilterBuilder extends SearchCriteria {
     return _variation = setField(_variation, 'variation', DbType.real);
   }
 
-  StockField _isDeleted;
-  StockField get isDeleted {
-    return _isDeleted = setField(_isDeleted, 'isDeleted', DbType.bool);
-  }
-
   bool _getIsDeleted;
 
   void _buildParameters() {
@@ -1087,15 +1033,15 @@ class StockFilterBuilder extends SearchCriteria {
   Future<BoolResult> delete([bool hardDelete = false]) async {
     _buildParameters();
     var r = BoolResult();
-    // Delete sub records where in (Portfolio_stock) according to DeleteRule.CASCADE
-    final idListPortfolio_stockBYstocksId = toListPrimaryKeySQL(false);
-    final resPortfolio_stockBYstocksId = await Portfolio_stock()
+    // Delete sub records where in (Portfoliostock) according to DeleteRule.CASCADE
+    final idListPortfoliostockBYstocksId = toListPrimaryKeySQL(false);
+    final resPortfoliostockBYstocksId = await Portfoliostock()
         .select()
-        .where('stocksId IN (${idListPortfolio_stockBYstocksId['sql']})',
-            parameterValue: idListPortfolio_stockBYstocksId['args'])
+        .where('stocksId IN (${idListPortfoliostockBYstocksId['sql']})',
+            parameterValue: idListPortfoliostockBYstocksId['args'])
         .delete(hardDelete);
-    if (!resPortfolio_stockBYstocksId.success) {
-      return resPortfolio_stockBYstocksId;
+    if (!resPortfoliostockBYstocksId.success) {
+      return resPortfoliostockBYstocksId;
     }
 
     if (Stock._softDeleteActivated && !hardDelete) {
@@ -1104,24 +1050,6 @@ class StockFilterBuilder extends SearchCriteria {
       r = await _obj._mnStock.delete(qparams);
     }
     return r;
-  }
-
-  /// Recover List<Stock> bulk by query
-  Future<BoolResult> recover() async {
-    _getIsDeleted = true;
-    _buildParameters();
-    print('SQFENTITIY: recover Stock bulk invoked');
-    // Recover sub records where in (Portfolio_stock) according to DeleteRule.CASCADE
-    final idListPortfolio_stockBYstocksId = toListPrimaryKeySQL(false);
-    final resPortfolio_stockBYstocksId = await Portfolio_stock()
-        .select()
-        .where('stocksId IN (${idListPortfolio_stockBYstocksId['sql']})',
-            parameterValue: idListPortfolio_stockBYstocksId['args'])
-        .update({'isDeleted': 0});
-    if (!resPortfolio_stockBYstocksId.success) {
-      return resPortfolio_stockBYstocksId;
-    }
-    return _obj._mnStock.updateBatch(qparams, {'isDeleted': 0});
   }
 
   /// using:
@@ -1169,12 +1097,12 @@ class StockFilterBuilder extends SearchCriteria {
       // RELATIONSHIPS PRELOAD CHILD
       if (preload) {
         loadedFields = loadedFields ?? [];
-        if (/*!_loadedFields.contains('stocks.plPortfolio_stocks') && */ (preloadFields ==
+        if (/*!_loadedFields.contains('stocks.plPortfoliostocks') && */ (preloadFields ==
                 null ||
-            preloadFields.contains('plPortfolio_stocks'))) {
-          /*_loadedFields.add('stocks.plPortfolio_stocks'); */
-          obj.plPortfolio_stocks = obj.plPortfolio_stocks ??
-              await obj.getPortfolio_stocks().toList(
+            preloadFields.contains('plPortfoliostocks'))) {
+          /*_loadedFields.add('stocks.plPortfoliostocks'); */
+          obj.plPortfoliostocks = obj.plPortfoliostocks ??
+              await obj.getPortfoliostocks().toList(
                   preload: preload,
                   preloadFields: preloadFields,
                   loadParents: false /*, loadedFields:_loadedFields*/);
@@ -1359,12 +1287,6 @@ class StockFields {
     return _fVariation = _fVariation ??
         SqlSyntax.setField(_fVariation, 'variation', DbType.real);
   }
-
-  static TableField _fIsDeleted;
-  static TableField get isDeleted {
-    return _fIsDeleted = _fIsDeleted ??
-        SqlSyntax.setField(_fIsDeleted, 'isDeleted', DbType.integer);
-  }
 }
 // endregion StockFields
 
@@ -1383,13 +1305,13 @@ class StockManager extends SqfEntityProvider {
 //endregion StockManager
 // region Portfolio
 class Portfolio {
-  Portfolio({this.id, this.name, this.isDeleted}) {
+  Portfolio({this.id, this.name}) {
     _setDefaultValues();
   }
-  Portfolio.withFields(this.name, this.isDeleted) {
+  Portfolio.withFields(this.name) {
     _setDefaultValues();
   }
-  Portfolio.withId(this.id, this.name, this.isDeleted) {
+  Portfolio.withId(this.id, this.name) {
     _setDefaultValues();
   }
   Portfolio.fromMap(Map<String, dynamic> o, {bool setDefaultValues = true}) {
@@ -1400,30 +1322,26 @@ class Portfolio {
     if (o['name'] != null) {
       name = o['name'] as String;
     }
-    isDeleted = o['isDeleted'] != null
-        ? o['isDeleted'] == 1 || o['isDeleted'] == true
-        : null;
   }
   // FIELDS (Portfolio)
   int id;
   String name;
-  bool isDeleted;
 
   BoolResult saveResult;
   // end FIELDS (Portfolio)
 
 // COLLECTIONS & VIRTUALS (Portfolio)
   /// to load children of items to this field, use preload parameter. Ex: toList(preload:true) or toSingle(preload:true) or getById(preload:true)
-  /// You can also specify this object into certain preload fields. Ex: toList(preload:true, preloadFields:['plPortfolio_stocks', 'plField2'..]) or so on..
-  List<Portfolio_stock> plPortfolio_stocks;
+  /// You can also specify this object into certain preload fields. Ex: toList(preload:true, preloadFields:['plPortfoliostocks', 'plField2'..]) or so on..
+  List<Portfoliostock> plPortfoliostocks;
 
-  /// get Portfolio_stock(s) filtered by id=portfoliosId
-  Portfolio_stockFilterBuilder getPortfolio_stocks(
+  /// get Portfoliostock(s) filtered by id=portfoliosId
+  PortfoliostockFilterBuilder getPortfoliostocks(
       {List<String> columnsToSelect, bool getIsDeleted}) {
     if (id == null) {
       return null;
     }
-    return Portfolio_stock()
+    return Portfoliostock()
         .select(columnsToSelect: columnsToSelect, getIsDeleted: getIsDeleted)
         .portfoliosId
         .equals(id)
@@ -1432,7 +1350,7 @@ class Portfolio {
 
 // END COLLECTIONS & VIRTUALS (Portfolio)
 
-  static const bool _softDeleteActivated = true;
+  static const bool _softDeleteActivated = false;
   PortfolioManager __mnPortfolio;
 
   PortfolioManager get _mnPortfolio {
@@ -1450,10 +1368,6 @@ class Portfolio {
       map['name'] = name;
     }
 
-    if (isDeleted != null) {
-      map['isDeleted'] = forQuery ? (isDeleted ? 1 : 0) : isDeleted;
-    }
-
     return map;
   }
 
@@ -1469,13 +1383,9 @@ class Portfolio {
       map['name'] = name;
     }
 
-    if (isDeleted != null) {
-      map['isDeleted'] = forQuery ? (isDeleted ? 1 : 0) : isDeleted;
-    }
-
 // COLLECTIONS (Portfolio)
     if (!forQuery) {
-      map['Portfolio_stocks'] = await getPortfolio_stocks().toMapList();
+      map['Portfoliostocks'] = await getPortfoliostocks().toMapList();
     }
 // END COLLECTIONS (Portfolio)
 
@@ -1493,11 +1403,11 @@ class Portfolio {
   }
 
   List<dynamic> toArgs() {
-    return [name, isDeleted];
+    return [name];
   }
 
   List<dynamic> toArgsWithIds() {
-    return [id, name, isDeleted];
+    return [id, name];
   }
 
   static Future<List<Portfolio>> fromWebUrl(String url,
@@ -1547,12 +1457,12 @@ class Portfolio {
       // RELATIONSHIPS PRELOAD CHILD
       if (preload) {
         loadedFields = loadedFields ?? [];
-        if (/*!_loadedFields.contains('portfolios.plPortfolio_stocks') && */ (preloadFields ==
+        if (/*!_loadedFields.contains('portfolios.plPortfoliostocks') && */ (preloadFields ==
                 null ||
-            preloadFields.contains('plPortfolio_stocks'))) {
-          /*_loadedFields.add('portfolios.plPortfolio_stocks'); */
-          obj.plPortfolio_stocks = obj.plPortfolio_stocks ??
-              await obj.getPortfolio_stocks().toList(
+            preloadFields.contains('plPortfoliostocks'))) {
+          /*_loadedFields.add('portfolios.plPortfoliostocks'); */
+          obj.plPortfoliostocks = obj.plPortfoliostocks ??
+              await obj.getPortfoliostocks().toList(
                   preload: preload,
                   preloadFields: preloadFields,
                   loadParents: false /*, loadedFields:_loadedFields*/);
@@ -1597,12 +1507,12 @@ class Portfolio {
       // RELATIONSHIPS PRELOAD CHILD
       if (preload) {
         loadedFields = loadedFields ?? [];
-        if (/*!_loadedFields.contains('portfolios.plPortfolio_stocks') && */ (preloadFields ==
+        if (/*!_loadedFields.contains('portfolios.plPortfoliostocks') && */ (preloadFields ==
                 null ||
-            preloadFields.contains('plPortfolio_stocks'))) {
-          /*_loadedFields.add('portfolios.plPortfolio_stocks'); */
-          obj.plPortfolio_stocks = obj.plPortfolio_stocks ??
-              await obj.getPortfolio_stocks().toList(
+            preloadFields.contains('plPortfoliostocks'))) {
+          /*_loadedFields.add('portfolios.plPortfoliostocks'); */
+          obj.plPortfoliostocks = obj.plPortfoliostocks ??
+              await obj.getPortfoliostocks().toList(
                   preload: preload,
                   preloadFields: preloadFields,
                   loadParents: false /*, loadedFields:_loadedFields*/);
@@ -1642,7 +1552,7 @@ class Portfolio {
   ///
   /// Returns a <List<BoolResult>>
   static Future<List<dynamic>> saveAll(List<Portfolio> portfolios) async {
-    // final results = _mnPortfolio.saveAll('INSERT OR REPLACE INTO portfolios (id,name,isDeleted)  VALUES (?,?,?)',portfolios);
+    // final results = _mnPortfolio.saveAll('INSERT OR REPLACE INTO portfolios (id,name)  VALUES (?,?)',portfolios);
     // return results; removed in sqfentity_gen 1.3.0+6
     await DbModel().batchStart();
     for (final obj in portfolios) {
@@ -1665,8 +1575,8 @@ class Portfolio {
   Future<int> upsert() async {
     try {
       if (await _mnPortfolio.rawInsert(
-              'INSERT OR REPLACE INTO portfolios (id,name,isDeleted)  VALUES (?,?,?)',
-              [id, name, isDeleted]) ==
+              'INSERT OR REPLACE INTO portfolios (id,name)  VALUES (?,?)',
+              [id, name]) ==
           1) {
         saveResult = BoolResult(
             success: true,
@@ -1691,7 +1601,7 @@ class Portfolio {
   /// Returns a BoolCommitResult
   Future<BoolCommitResult> upsertAll(List<Portfolio> portfolios) async {
     final results = await _mnPortfolio.rawInsertAll(
-        'INSERT OR REPLACE INTO portfolios (id,name,isDeleted)  VALUES (?,?,?)',
+        'INSERT OR REPLACE INTO portfolios (id,name)  VALUES (?,?)',
         portfolios);
     return results;
   }
@@ -1703,7 +1613,7 @@ class Portfolio {
     print('SQFENTITIY: delete Portfolio invoked (id=$id)');
     var result = BoolResult();
     {
-      result = await Portfolio_stock()
+      result = await Portfoliostock()
           .select()
           .portfoliosId
           .equals(id)
@@ -1713,40 +1623,13 @@ class Portfolio {
     if (!result.success) {
       return result;
     }
-    if (!_softDeleteActivated || hardDelete || isDeleted) {
+    if (!_softDeleteActivated || hardDelete) {
       return _mnPortfolio
           .delete(QueryParams(whereString: 'id=?', whereArguments: [id]));
     } else {
       return _mnPortfolio.updateBatch(
           QueryParams(whereString: 'id=?', whereArguments: [id]),
           {'isDeleted': 1});
-    }
-  }
-
-  /// Recover Portfolio>
-
-  /// <returns>BoolResult res.success=Recovered, not res.success=Can not recovered
-  Future<BoolResult> recover([bool recoverChilds = true]) async {
-    print('SQFENTITIY: recover Portfolio invoked (id=$id)');
-    var result = BoolResult();
-    if (recoverChilds) {
-      result = await Portfolio_stock()
-          .select(getIsDeleted: true)
-          .isDeleted
-          .equals(true)
-          .and
-          .portfoliosId
-          .equals(id)
-          .and
-          .update({'isDeleted': 0});
-    }
-    if (!result.success && recoverChilds) {
-      return result;
-    }
-    {
-      return _mnPortfolio.updateBatch(
-          QueryParams(whereString: 'id=?', whereArguments: [id]),
-          {'isDeleted': 0});
     }
   }
 
@@ -1765,9 +1648,7 @@ class Portfolio {
       ..qparams.distinct = true;
   }
 
-  void _setDefaultValues() {
-    isDeleted = isDeleted ?? false;
-  }
+  void _setDefaultValues() {}
   // END METHODS
   // CUSTOM CODES
   /*
@@ -2184,11 +2065,6 @@ class PortfolioFilterBuilder extends SearchCriteria {
     return _name = setField(_name, 'name', DbType.text);
   }
 
-  PortfolioField _isDeleted;
-  PortfolioField get isDeleted {
-    return _isDeleted = setField(_isDeleted, 'isDeleted', DbType.bool);
-  }
-
   bool _getIsDeleted;
 
   void _buildParameters() {
@@ -2292,16 +2168,15 @@ class PortfolioFilterBuilder extends SearchCriteria {
   Future<BoolResult> delete([bool hardDelete = false]) async {
     _buildParameters();
     var r = BoolResult();
-    // Delete sub records where in (Portfolio_stock) according to DeleteRule.CASCADE
-    final idListPortfolio_stockBYportfoliosId = toListPrimaryKeySQL(false);
-    final resPortfolio_stockBYportfoliosId = await Portfolio_stock()
+    // Delete sub records where in (Portfoliostock) according to DeleteRule.CASCADE
+    final idListPortfoliostockBYportfoliosId = toListPrimaryKeySQL(false);
+    final resPortfoliostockBYportfoliosId = await Portfoliostock()
         .select()
-        .where(
-            'portfoliosId IN (${idListPortfolio_stockBYportfoliosId['sql']})',
-            parameterValue: idListPortfolio_stockBYportfoliosId['args'])
+        .where('portfoliosId IN (${idListPortfoliostockBYportfoliosId['sql']})',
+            parameterValue: idListPortfoliostockBYportfoliosId['args'])
         .delete(hardDelete);
-    if (!resPortfolio_stockBYportfoliosId.success) {
-      return resPortfolio_stockBYportfoliosId;
+    if (!resPortfoliostockBYportfoliosId.success) {
+      return resPortfoliostockBYportfoliosId;
     }
 
     if (Portfolio._softDeleteActivated && !hardDelete) {
@@ -2310,25 +2185,6 @@ class PortfolioFilterBuilder extends SearchCriteria {
       r = await _obj._mnPortfolio.delete(qparams);
     }
     return r;
-  }
-
-  /// Recover List<Portfolio> bulk by query
-  Future<BoolResult> recover() async {
-    _getIsDeleted = true;
-    _buildParameters();
-    print('SQFENTITIY: recover Portfolio bulk invoked');
-    // Recover sub records where in (Portfolio_stock) according to DeleteRule.CASCADE
-    final idListPortfolio_stockBYportfoliosId = toListPrimaryKeySQL(false);
-    final resPortfolio_stockBYportfoliosId = await Portfolio_stock()
-        .select()
-        .where(
-            'portfoliosId IN (${idListPortfolio_stockBYportfoliosId['sql']})',
-            parameterValue: idListPortfolio_stockBYportfoliosId['args'])
-        .update({'isDeleted': 0});
-    if (!resPortfolio_stockBYportfoliosId.success) {
-      return resPortfolio_stockBYportfoliosId;
-    }
-    return _obj._mnPortfolio.updateBatch(qparams, {'isDeleted': 0});
   }
 
   /// using:
@@ -2376,12 +2232,12 @@ class PortfolioFilterBuilder extends SearchCriteria {
       // RELATIONSHIPS PRELOAD CHILD
       if (preload) {
         loadedFields = loadedFields ?? [];
-        if (/*!_loadedFields.contains('portfolios.plPortfolio_stocks') && */ (preloadFields ==
+        if (/*!_loadedFields.contains('portfolios.plPortfoliostocks') && */ (preloadFields ==
                 null ||
-            preloadFields.contains('plPortfolio_stocks'))) {
-          /*_loadedFields.add('portfolios.plPortfolio_stocks'); */
-          obj.plPortfolio_stocks = obj.plPortfolio_stocks ??
-              await obj.getPortfolio_stocks().toList(
+            preloadFields.contains('plPortfoliostocks'))) {
+          /*_loadedFields.add('portfolios.plPortfoliostocks'); */
+          obj.plPortfoliostocks = obj.plPortfoliostocks ??
+              await obj.getPortfoliostocks().toList(
                   preload: preload,
                   preloadFields: preloadFields,
                   loadParents: false /*, loadedFields:_loadedFields*/);
@@ -2548,12 +2404,6 @@ class PortfolioFields {
   static TableField get name {
     return _fName = _fName ?? SqlSyntax.setField(_fName, 'name', DbType.text);
   }
-
-  static TableField _fIsDeleted;
-  static TableField get isDeleted {
-    return _fIsDeleted = _fIsDeleted ??
-        SqlSyntax.setField(_fIsDeleted, 'isDeleted', DbType.integer);
-  }
 }
 // endregion PortfolioFields
 
@@ -2570,19 +2420,18 @@ class PortfolioManager extends SqfEntityProvider {
 }
 
 //endregion PortfolioManager
-// region Portfolio_stock
-class Portfolio_stock {
-  Portfolio_stock({this.id, this.portfoliosId, this.stocksId, this.isDeleted}) {
+// region Portfoliostock
+class Portfoliostock {
+  Portfoliostock({this.id, this.portfoliosId, this.stocksId}) {
     _setDefaultValues();
   }
-  Portfolio_stock.withFields(this.portfoliosId, this.stocksId, this.isDeleted) {
+  Portfoliostock.withFields(this.portfoliosId, this.stocksId) {
     _setDefaultValues();
   }
-  Portfolio_stock.withId(
-      this.id, this.portfoliosId, this.stocksId, this.isDeleted) {
+  Portfoliostock.withId(this.id, this.portfoliosId, this.stocksId) {
     _setDefaultValues();
   }
-  Portfolio_stock.fromMap(Map<String, dynamic> o,
+  Portfoliostock.fromMap(Map<String, dynamic> o,
       {bool setDefaultValues = true}) {
     if (setDefaultValues) {
       _setDefaultValues();
@@ -2591,10 +2440,6 @@ class Portfolio_stock {
     portfoliosId = int.tryParse(o['portfoliosId'].toString());
 
     stocksId = int.tryParse(o['stocksId'].toString());
-
-    isDeleted = o['isDeleted'] != null
-        ? o['isDeleted'] == 1 || o['isDeleted'] == true
-        : null;
 
     // RELATIONSHIPS FromMAP
     plPortfolio = o['portfolio'] != null
@@ -2605,16 +2450,15 @@ class Portfolio_stock {
         : null;
     // END RELATIONSHIPS FromMAP
   }
-  // FIELDS (Portfolio_stock)
+  // FIELDS (Portfoliostock)
   int id;
   int portfoliosId;
   int stocksId;
-  bool isDeleted;
 
   BoolResult saveResult;
-  // end FIELDS (Portfolio_stock)
+  // end FIELDS (Portfoliostock)
 
-// RELATIONSHIPS (Portfolio_stock)
+// RELATIONSHIPS (Portfoliostock)
   /// to load parent of items to this field, use preload parameter ex: toList(preload:true) or toSingle(preload:true) or getById(preload:true)
   /// You can also specify this object into certain preload fields. Ex: toList(preload:true, preloadFields:['plPortfolio', 'plField2'..]) or so on..
   Portfolio plPortfolio;
@@ -2638,14 +2482,13 @@ class Portfolio_stock {
         loadParents: loadParents, loadedFields: loadedFields);
     return _obj;
   }
-  // END RELATIONSHIPS (Portfolio_stock)
+  // END RELATIONSHIPS (Portfoliostock)
 
-  static const bool _softDeleteActivated = true;
-  Portfolio_stockManager __mnPortfolio_stock;
+  static const bool _softDeleteActivated = false;
+  PortfoliostockManager __mnPortfoliostock;
 
-  Portfolio_stockManager get _mnPortfolio_stock {
-    return __mnPortfolio_stock =
-        __mnPortfolio_stock ?? Portfolio_stockManager();
+  PortfoliostockManager get _mnPortfoliostock {
+    return __mnPortfoliostock = __mnPortfoliostock ?? PortfoliostockManager();
   }
 
   // METHODS
@@ -2661,10 +2504,6 @@ class Portfolio_stock {
 
     if (stocksId != null) {
       map['stocksId'] = forView ? plStock.ticker : stocksId;
-    }
-
-    if (isDeleted != null) {
-      map['isDeleted'] = forQuery ? (isDeleted ? 1 : 0) : isDeleted;
     }
 
     return map;
@@ -2686,39 +2525,35 @@ class Portfolio_stock {
       map['stocksId'] = forView ? plStock.ticker : stocksId;
     }
 
-    if (isDeleted != null) {
-      map['isDeleted'] = forQuery ? (isDeleted ? 1 : 0) : isDeleted;
-    }
-
     return map;
   }
 
-  /// This method returns Json String [Portfolio_stock]
+  /// This method returns Json String [Portfoliostock]
   String toJson() {
     return json.encode(toMap(forJson: true));
   }
 
-  /// This method returns Json String [Portfolio_stock]
+  /// This method returns Json String [Portfoliostock]
   Future<String> toJsonWithChilds() async {
     return json.encode(await toMapWithChildren(false, true));
   }
 
   List<dynamic> toArgs() {
-    return [portfoliosId, stocksId, isDeleted];
+    return [portfoliosId, stocksId];
   }
 
   List<dynamic> toArgsWithIds() {
-    return [id, portfoliosId, stocksId, isDeleted];
+    return [id, portfoliosId, stocksId];
   }
 
-  static Future<List<Portfolio_stock>> fromWebUrl(String url,
+  static Future<List<Portfoliostock>> fromWebUrl(String url,
       {Map<String, String> headers}) async {
     try {
       final response = await http.get(url, headers: headers);
       return await fromJson(response.body);
     } catch (e) {
       print(
-          'SQFENTITY ERROR Portfolio_stock.fromWebUrl: ErrorMessage: ${e.toString()}');
+          'SQFENTITY ERROR Portfoliostock.fromWebUrl: ErrorMessage: ${e.toString()}');
       return null;
     }
   }
@@ -2727,31 +2562,31 @@ class Portfolio_stock {
     return http.post(url, headers: headers, body: toJson());
   }
 
-  static Future<List<Portfolio_stock>> fromJson(String jsonBody) async {
+  static Future<List<Portfoliostock>> fromJson(String jsonBody) async {
     final Iterable list = await json.decode(jsonBody) as Iterable;
-    var objList = <Portfolio_stock>[];
+    var objList = <Portfoliostock>[];
     try {
       objList = list
-          .map((portfolio_stock) =>
-              Portfolio_stock.fromMap(portfolio_stock as Map<String, dynamic>))
+          .map((portfoliostock) =>
+              Portfoliostock.fromMap(portfoliostock as Map<String, dynamic>))
           .toList();
     } catch (e) {
       print(
-          'SQFENTITY ERROR Portfolio_stock.fromJson: ErrorMessage: ${e.toString()}');
+          'SQFENTITY ERROR Portfoliostock.fromJson: ErrorMessage: ${e.toString()}');
     }
     return objList;
   }
 
-  static Future<List<Portfolio_stock>> fromMapList(List<dynamic> data,
+  static Future<List<Portfoliostock>> fromMapList(List<dynamic> data,
       {bool preload = false,
       List<String> preloadFields,
       bool loadParents = false,
       List<String> loadedFields,
       bool setDefaultValues = true}) async {
-    final List<Portfolio_stock> objList = <Portfolio_stock>[];
+    final List<Portfoliostock> objList = <Portfoliostock>[];
     loadedFields = loadedFields ?? [];
     for (final map in data) {
-      final obj = Portfolio_stock.fromMap(map as Map<String, dynamic>,
+      final obj = Portfoliostock.fromMap(map as Map<String, dynamic>,
           setDefaultValues: setDefaultValues);
       // final List<String> _loadedFields = List<String>.from(loadedFields);
 
@@ -2783,7 +2618,7 @@ class Portfolio_stock {
     return objList;
   }
 
-  /// returns Portfolio_stock by ID if exist, otherwise returns null
+  /// returns Portfoliostock by ID if exist, otherwise returns null
   ///
   /// Primary Keys: int id
   ///
@@ -2798,8 +2633,8 @@ class Portfolio_stock {
   /// bool loadParents: if true, loads all parent objects until the object has no parent
 
   ///
-  /// <returns>returns Portfolio_stock if exist, otherwise returns null
-  Future<Portfolio_stock> getById(int id,
+  /// <returns>returns Portfoliostock if exist, otherwise returns null
+  Future<Portfoliostock> getById(int id,
       {bool preload = false,
       List<String> preloadFields,
       bool loadParents = false,
@@ -2807,10 +2642,10 @@ class Portfolio_stock {
     if (id == null) {
       return null;
     }
-    Portfolio_stock obj;
-    final data = await _mnPortfolio_stock.getById([id]);
+    Portfoliostock obj;
+    final data = await _mnPortfoliostock.getById([id]);
     if (data.length != 0) {
-      obj = Portfolio_stock.fromMap(data[0] as Map<String, dynamic>);
+      obj = Portfoliostock.fromMap(data[0] as Map<String, dynamic>);
       // final List<String> _loadedFields = loadedFields ?? [];
 
       // RELATIONSHIPS PRELOAD
@@ -2842,45 +2677,45 @@ class Portfolio_stock {
     return obj;
   }
 
-  /// Saves the (Portfolio_stock) object. If the id field is null, saves as a new record and returns new id, if id is not null then updates record
+  /// Saves the (Portfoliostock) object. If the id field is null, saves as a new record and returns new id, if id is not null then updates record
 
   /// <returns>Returns id
   Future<int> save() async {
     if (id == null || id == 0) {
-      id = await _mnPortfolio_stock.insert(this);
+      id = await _mnPortfoliostock.insert(this);
     } else {
       // id= await _upsert(); // removed in sqfentity_gen 1.3.0+6
-      await _mnPortfolio_stock.update(this);
+      await _mnPortfoliostock.update(this);
     }
 
     return id;
   }
 
-  /// saveAs Portfolio_stock. Returns a new Primary Key value of Portfolio_stock
+  /// saveAs Portfoliostock. Returns a new Primary Key value of Portfoliostock
 
-  /// <returns>Returns a new Primary Key value of Portfolio_stock
+  /// <returns>Returns a new Primary Key value of Portfoliostock
   Future<int> saveAs() async {
     id = null;
 
     return save();
   }
 
-  /// saveAll method saves the sent List<Portfolio_stock> as a bulk in one transaction
+  /// saveAll method saves the sent List<Portfoliostock> as a bulk in one transaction
   ///
   /// Returns a <List<BoolResult>>
   static Future<List<dynamic>> saveAll(
-      List<Portfolio_stock> portfolio_stocks) async {
-    // final results = _mnPortfolio_stock.saveAll('INSERT OR REPLACE INTO portfolio_stock (id,portfoliosId, stocksId,isDeleted)  VALUES (?,?,?,?)',portfolio_stocks);
+      List<Portfoliostock> portfoliostocks) async {
+    // final results = _mnPortfoliostock.saveAll('INSERT OR REPLACE INTO portfoliostock (id,portfoliosId, stocksId)  VALUES (?,?,?)',portfoliostocks);
     // return results; removed in sqfentity_gen 1.3.0+6
     await DbModel().batchStart();
-    for (final obj in portfolio_stocks) {
+    for (final obj in portfoliostocks) {
       await obj.save();
     }
     //    return DbModel().batchCommit();
     final result = await DbModel().batchCommit();
-    for (int i = 0; i < portfolio_stocks.length; i++) {
-      if (portfolio_stocks[i].id == null) {
-        portfolio_stocks[i].id = result[i] as int;
+    for (int i = 0; i < portfoliostocks.length; i++) {
+      if (portfoliostocks[i].id == null) {
+        portfoliostocks[i].id = result[i] as int;
       }
     }
 
@@ -2892,85 +2727,71 @@ class Portfolio_stock {
   /// <returns>Returns id
   Future<int> upsert() async {
     try {
-      if (await _mnPortfolio_stock.rawInsert(
-              'INSERT OR REPLACE INTO portfolio_stock (id,portfoliosId, stocksId,isDeleted)  VALUES (?,?,?,?)',
-              [id, portfoliosId, stocksId, isDeleted]) ==
+      if (await _mnPortfoliostock.rawInsert(
+              'INSERT OR REPLACE INTO portfoliostock (id,portfoliosId, stocksId)  VALUES (?,?,?)',
+              [id, portfoliosId, stocksId]) ==
           1) {
         saveResult = BoolResult(
             success: true,
-            successMessage: 'Portfolio_stock id=$id updated successfully');
+            successMessage: 'Portfoliostock id=$id updated successfully');
       } else {
         saveResult = BoolResult(
             success: false,
-            errorMessage: 'Portfolio_stock id=$id did not update');
+            errorMessage: 'Portfoliostock id=$id did not update');
       }
       return id;
     } catch (e) {
       saveResult = BoolResult(
           success: false,
-          errorMessage: 'Portfolio_stock Save failed. Error: ${e.toString()}');
+          errorMessage: 'Portfoliostock Save failed. Error: ${e.toString()}');
       return 0;
     }
   }
 
-  /// inserts or replaces the sent List<<Portfolio_stock>> as a bulk in one transaction.
+  /// inserts or replaces the sent List<<Portfoliostock>> as a bulk in one transaction.
   ///
   /// upsertAll() method is faster then saveAll() method. upsertAll() should be used when you are sure that the primary key is greater than zero
   ///
   /// Returns a BoolCommitResult
   Future<BoolCommitResult> upsertAll(
-      List<Portfolio_stock> portfolio_stocks) async {
-    final results = await _mnPortfolio_stock.rawInsertAll(
-        'INSERT OR REPLACE INTO portfolio_stock (id,portfoliosId, stocksId,isDeleted)  VALUES (?,?,?,?)',
-        portfolio_stocks);
+      List<Portfoliostock> portfoliostocks) async {
+    final results = await _mnPortfoliostock.rawInsertAll(
+        'INSERT OR REPLACE INTO portfoliostock (id,portfoliosId, stocksId)  VALUES (?,?,?)',
+        portfoliostocks);
     return results;
   }
 
-  /// Deletes Portfolio_stock
+  /// Deletes Portfoliostock
 
   /// <returns>BoolResult res.success=Deleted, not res.success=Can not deleted
   Future<BoolResult> delete([bool hardDelete = false]) async {
-    print('SQFENTITIY: delete Portfolio_stock invoked (id=$id)');
-    if (!_softDeleteActivated || hardDelete || isDeleted) {
-      return _mnPortfolio_stock
+    print('SQFENTITIY: delete Portfoliostock invoked (id=$id)');
+    if (!_softDeleteActivated || hardDelete) {
+      return _mnPortfoliostock
           .delete(QueryParams(whereString: 'id=?', whereArguments: [id]));
     } else {
-      return _mnPortfolio_stock.updateBatch(
+      return _mnPortfoliostock.updateBatch(
           QueryParams(whereString: 'id=?', whereArguments: [id]),
           {'isDeleted': 1});
     }
   }
 
-  /// Recover Portfolio_stock>
-
-  /// <returns>BoolResult res.success=Recovered, not res.success=Can not recovered
-  Future<BoolResult> recover([bool recoverChilds = true]) async {
-    print('SQFENTITIY: recover Portfolio_stock invoked (id=$id)');
-    {
-      return _mnPortfolio_stock.updateBatch(
-          QueryParams(whereString: 'id=?', whereArguments: [id]),
-          {'isDeleted': 0});
-    }
-  }
-
-  Portfolio_stockFilterBuilder select(
+  PortfoliostockFilterBuilder select(
       {List<String> columnsToSelect, bool getIsDeleted}) {
-    return Portfolio_stockFilterBuilder(this)
+    return PortfoliostockFilterBuilder(this)
       .._getIsDeleted = getIsDeleted == true
       ..qparams.selectColumns = columnsToSelect;
   }
 
-  Portfolio_stockFilterBuilder distinct(
+  PortfoliostockFilterBuilder distinct(
       {List<String> columnsToSelect, bool getIsDeleted}) {
-    return Portfolio_stockFilterBuilder(this)
+    return PortfoliostockFilterBuilder(this)
       .._getIsDeleted = getIsDeleted == true
       ..qparams.selectColumns = columnsToSelect
       ..qparams.distinct = true;
   }
 
-  void _setDefaultValues() {
-    isDeleted = isDeleted ?? false;
-  }
+  void _setDefaultValues() {}
   // END METHODS
   // CUSTOM CODES
   /*
@@ -2992,230 +2813,226 @@ class Portfolio_stock {
      */
   // END CUSTOM CODES
 }
-// endregion portfolio_stock
+// endregion portfoliostock
 
-// region Portfolio_stockField
-class Portfolio_stockField extends SearchCriteria {
-  Portfolio_stockField(this.portfolio_stockFB) {
+// region PortfoliostockField
+class PortfoliostockField extends SearchCriteria {
+  PortfoliostockField(this.portfoliostockFB) {
     param = DbParameter();
   }
   DbParameter param;
   String _waitingNot = '';
-  Portfolio_stockFilterBuilder portfolio_stockFB;
+  PortfoliostockFilterBuilder portfoliostockFB;
 
-  Portfolio_stockField get not {
+  PortfoliostockField get not {
     _waitingNot = ' NOT ';
     return this;
   }
 
-  Portfolio_stockFilterBuilder equals(dynamic pValue) {
+  PortfoliostockFilterBuilder equals(dynamic pValue) {
     param.expression = '=';
-    portfolio_stockFB._addedBlocks = _waitingNot == ''
-        ? setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.EQuals, portfolio_stockFB._addedBlocks)
-        : setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.NotEQuals, portfolio_stockFB._addedBlocks);
+    portfoliostockFB._addedBlocks = _waitingNot == ''
+        ? setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.EQuals, portfoliostockFB._addedBlocks)
+        : setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.NotEQuals, portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder equalsOrNull(dynamic pValue) {
+  PortfoliostockFilterBuilder equalsOrNull(dynamic pValue) {
     param.expression = '=';
-    portfolio_stockFB._addedBlocks = _waitingNot == ''
-        ? setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.EQualsOrNull, portfolio_stockFB._addedBlocks)
-        : setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.NotEQualsOrNull, portfolio_stockFB._addedBlocks);
+    portfoliostockFB._addedBlocks = _waitingNot == ''
+        ? setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.EQualsOrNull, portfoliostockFB._addedBlocks)
+        : setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.NotEQualsOrNull, portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder isNull() {
-    portfolio_stockFB._addedBlocks = setCriteria(
+  PortfoliostockFilterBuilder isNull() {
+    portfoliostockFB._addedBlocks = setCriteria(
         0,
-        portfolio_stockFB.parameters,
+        portfoliostockFB.parameters,
         param,
         SqlSyntax.IsNULL.replaceAll(SqlSyntax.notKeyword, _waitingNot),
-        portfolio_stockFB._addedBlocks);
+        portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder contains(dynamic pValue) {
+  PortfoliostockFilterBuilder contains(dynamic pValue) {
     if (pValue != null) {
-      portfolio_stockFB._addedBlocks = setCriteria(
+      portfoliostockFB._addedBlocks = setCriteria(
           '%${pValue.toString()}%',
-          portfolio_stockFB.parameters,
+          portfoliostockFB.parameters,
           param,
           SqlSyntax.Contains.replaceAll(SqlSyntax.notKeyword, _waitingNot),
-          portfolio_stockFB._addedBlocks);
+          portfoliostockFB._addedBlocks);
       _waitingNot = '';
-      portfolio_stockFB
-              ._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-          portfolio_stockFB._addedBlocks.retVal;
+      portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+          portfoliostockFB._addedBlocks.retVal;
     }
-    return portfolio_stockFB;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder startsWith(dynamic pValue) {
+  PortfoliostockFilterBuilder startsWith(dynamic pValue) {
     if (pValue != null) {
-      portfolio_stockFB._addedBlocks = setCriteria(
+      portfoliostockFB._addedBlocks = setCriteria(
           '${pValue.toString()}%',
-          portfolio_stockFB.parameters,
+          portfoliostockFB.parameters,
           param,
           SqlSyntax.Contains.replaceAll(SqlSyntax.notKeyword, _waitingNot),
-          portfolio_stockFB._addedBlocks);
+          portfoliostockFB._addedBlocks);
       _waitingNot = '';
-      portfolio_stockFB
-              ._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-          portfolio_stockFB._addedBlocks.retVal;
-      portfolio_stockFB
-              ._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-          portfolio_stockFB._addedBlocks.retVal;
+      portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+          portfoliostockFB._addedBlocks.retVal;
+      portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+          portfoliostockFB._addedBlocks.retVal;
     }
-    return portfolio_stockFB;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder endsWith(dynamic pValue) {
+  PortfoliostockFilterBuilder endsWith(dynamic pValue) {
     if (pValue != null) {
-      portfolio_stockFB._addedBlocks = setCriteria(
+      portfoliostockFB._addedBlocks = setCriteria(
           '%${pValue.toString()}',
-          portfolio_stockFB.parameters,
+          portfoliostockFB.parameters,
           param,
           SqlSyntax.Contains.replaceAll(SqlSyntax.notKeyword, _waitingNot),
-          portfolio_stockFB._addedBlocks);
+          portfoliostockFB._addedBlocks);
       _waitingNot = '';
-      portfolio_stockFB
-              ._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-          portfolio_stockFB._addedBlocks.retVal;
+      portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+          portfoliostockFB._addedBlocks.retVal;
     }
-    return portfolio_stockFB;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder between(dynamic pFirst, dynamic pLast) {
+  PortfoliostockFilterBuilder between(dynamic pFirst, dynamic pLast) {
     if (pFirst != null && pLast != null) {
-      portfolio_stockFB._addedBlocks = setCriteria(
+      portfoliostockFB._addedBlocks = setCriteria(
           pFirst,
-          portfolio_stockFB.parameters,
+          portfoliostockFB.parameters,
           param,
           SqlSyntax.Between.replaceAll(SqlSyntax.notKeyword, _waitingNot),
-          portfolio_stockFB._addedBlocks,
+          portfoliostockFB._addedBlocks,
           pLast);
     } else if (pFirst != null) {
       if (_waitingNot != '') {
-        portfolio_stockFB._addedBlocks = setCriteria(
+        portfoliostockFB._addedBlocks = setCriteria(
             pFirst,
-            portfolio_stockFB.parameters,
+            portfoliostockFB.parameters,
             param,
             SqlSyntax.LessThan,
-            portfolio_stockFB._addedBlocks);
+            portfoliostockFB._addedBlocks);
       } else {
-        portfolio_stockFB._addedBlocks = setCriteria(
+        portfoliostockFB._addedBlocks = setCriteria(
             pFirst,
-            portfolio_stockFB.parameters,
+            portfoliostockFB.parameters,
             param,
             SqlSyntax.GreaterThanOrEquals,
-            portfolio_stockFB._addedBlocks);
+            portfoliostockFB._addedBlocks);
       }
     } else if (pLast != null) {
       if (_waitingNot != '') {
-        portfolio_stockFB._addedBlocks = setCriteria(
+        portfoliostockFB._addedBlocks = setCriteria(
             pLast,
-            portfolio_stockFB.parameters,
+            portfoliostockFB.parameters,
             param,
             SqlSyntax.GreaterThan,
-            portfolio_stockFB._addedBlocks);
+            portfoliostockFB._addedBlocks);
       } else {
-        portfolio_stockFB._addedBlocks = setCriteria(
+        portfoliostockFB._addedBlocks = setCriteria(
             pLast,
-            portfolio_stockFB.parameters,
+            portfoliostockFB.parameters,
             param,
             SqlSyntax.LessThanOrEquals,
-            portfolio_stockFB._addedBlocks);
+            portfoliostockFB._addedBlocks);
       }
     }
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder greaterThan(dynamic pValue) {
+  PortfoliostockFilterBuilder greaterThan(dynamic pValue) {
     param.expression = '>';
-    portfolio_stockFB._addedBlocks = _waitingNot == ''
-        ? setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.GreaterThan, portfolio_stockFB._addedBlocks)
-        : setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.LessThanOrEquals, portfolio_stockFB._addedBlocks);
+    portfoliostockFB._addedBlocks = _waitingNot == ''
+        ? setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.GreaterThan, portfoliostockFB._addedBlocks)
+        : setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.LessThanOrEquals, portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder lessThan(dynamic pValue) {
+  PortfoliostockFilterBuilder lessThan(dynamic pValue) {
     param.expression = '<';
-    portfolio_stockFB._addedBlocks = _waitingNot == ''
-        ? setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.LessThan, portfolio_stockFB._addedBlocks)
-        : setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.GreaterThanOrEquals, portfolio_stockFB._addedBlocks);
+    portfoliostockFB._addedBlocks = _waitingNot == ''
+        ? setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.LessThan, portfoliostockFB._addedBlocks)
+        : setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.GreaterThanOrEquals, portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder greaterThanOrEquals(dynamic pValue) {
+  PortfoliostockFilterBuilder greaterThanOrEquals(dynamic pValue) {
     param.expression = '>=';
-    portfolio_stockFB._addedBlocks = _waitingNot == ''
-        ? setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.GreaterThanOrEquals, portfolio_stockFB._addedBlocks)
-        : setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.LessThan, portfolio_stockFB._addedBlocks);
+    portfoliostockFB._addedBlocks = _waitingNot == ''
+        ? setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.GreaterThanOrEquals, portfoliostockFB._addedBlocks)
+        : setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.LessThan, portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder lessThanOrEquals(dynamic pValue) {
+  PortfoliostockFilterBuilder lessThanOrEquals(dynamic pValue) {
     param.expression = '<=';
-    portfolio_stockFB._addedBlocks = _waitingNot == ''
-        ? setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.LessThanOrEquals, portfolio_stockFB._addedBlocks)
-        : setCriteria(pValue, portfolio_stockFB.parameters, param,
-            SqlSyntax.GreaterThan, portfolio_stockFB._addedBlocks);
+    portfoliostockFB._addedBlocks = _waitingNot == ''
+        ? setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.LessThanOrEquals, portfoliostockFB._addedBlocks)
+        : setCriteria(pValue, portfoliostockFB.parameters, param,
+            SqlSyntax.GreaterThan, portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 
-  Portfolio_stockFilterBuilder inValues(dynamic pValue) {
-    portfolio_stockFB._addedBlocks = setCriteria(
+  PortfoliostockFilterBuilder inValues(dynamic pValue) {
+    portfoliostockFB._addedBlocks = setCriteria(
         pValue,
-        portfolio_stockFB.parameters,
+        portfoliostockFB.parameters,
         param,
         SqlSyntax.IN.replaceAll(SqlSyntax.notKeyword, _waitingNot),
-        portfolio_stockFB._addedBlocks);
+        portfoliostockFB._addedBlocks);
     _waitingNot = '';
-    portfolio_stockFB._addedBlocks.needEndBlock[portfolio_stockFB._blockIndex] =
-        portfolio_stockFB._addedBlocks.retVal;
-    return portfolio_stockFB;
+    portfoliostockFB._addedBlocks.needEndBlock[portfoliostockFB._blockIndex] =
+        portfoliostockFB._addedBlocks.retVal;
+    return portfoliostockFB;
   }
 }
-// endregion Portfolio_stockField
+// endregion PortfoliostockField
 
-// region Portfolio_stockFilterBuilder
-class Portfolio_stockFilterBuilder extends SearchCriteria {
-  Portfolio_stockFilterBuilder(Portfolio_stock obj) {
+// region PortfoliostockFilterBuilder
+class PortfoliostockFilterBuilder extends SearchCriteria {
+  PortfoliostockFilterBuilder(Portfoliostock obj) {
     whereString = '';
     qparams = QueryParams();
     parameters = <DbParameter>[];
@@ -3232,13 +3049,13 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   int _blockIndex = 0;
   List<DbParameter> parameters;
   List<String> orderByList;
-  Portfolio_stock _obj;
+  Portfoliostock _obj;
   QueryParams qparams;
   int _pagesize;
   int _page;
 
   /// put the sql keyword 'AND'
-  Portfolio_stockFilterBuilder get and {
+  PortfoliostockFilterBuilder get and {
     if (parameters.isNotEmpty) {
       parameters[parameters.length - 1].wOperator = ' AND ';
     }
@@ -3246,7 +3063,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   }
 
   /// put the sql keyword 'OR'
-  Portfolio_stockFilterBuilder get or {
+  PortfoliostockFilterBuilder get or {
     if (parameters.isNotEmpty) {
       parameters[parameters.length - 1].wOperator = ' OR ';
     }
@@ -3254,7 +3071,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   }
 
   /// open parentheses
-  Portfolio_stockFilterBuilder get startBlock {
+  PortfoliostockFilterBuilder get startBlock {
     _addedBlocks.waitingStartBlock.add(true);
     _addedBlocks.needEndBlock.add(false);
     _blockIndex++;
@@ -3265,7 +3082,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   }
 
   /// String whereCriteria, write raw query without 'where' keyword. Like this: 'field1 like 'test%' and field2 = 3'
-  Portfolio_stockFilterBuilder where(String whereCriteria,
+  PortfoliostockFilterBuilder where(String whereCriteria,
       {dynamic parameterValue}) {
     if (whereCriteria != null && whereCriteria != '') {
       final DbParameter param = DbParameter(
@@ -3281,7 +3098,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   /// page = page number,
   ///
   /// pagesize = row(s) per page
-  Portfolio_stockFilterBuilder page(int page, int pagesize) {
+  PortfoliostockFilterBuilder page(int page, int pagesize) {
     if (page > 0) {
       _page = page;
     }
@@ -3292,7 +3109,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   }
 
   /// int count = LIMIT
-  Portfolio_stockFilterBuilder top(int count) {
+  PortfoliostockFilterBuilder top(int count) {
     if (count > 0) {
       _pagesize = count;
     }
@@ -3300,7 +3117,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   }
 
   /// close parentheses
-  Portfolio_stockFilterBuilder get endBlock {
+  PortfoliostockFilterBuilder get endBlock {
     if (_addedBlocks.needEndBlock[_blockIndex]) {
       parameters[parameters.length - 1].whereString += ' ) ';
     }
@@ -3315,7 +3132,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   /// Example 1: argFields='name, date'
   ///
   /// Example 2: argFields = ['name', 'date']
-  Portfolio_stockFilterBuilder orderBy(dynamic argFields) {
+  PortfoliostockFilterBuilder orderBy(dynamic argFields) {
     if (argFields != null) {
       if (argFields is String) {
         orderByList.add(argFields);
@@ -3335,7 +3152,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   /// Example 1: argFields='field1, field2'
   ///
   /// Example 2: argFields = ['field1', 'field2']
-  Portfolio_stockFilterBuilder orderByDesc(dynamic argFields) {
+  PortfoliostockFilterBuilder orderByDesc(dynamic argFields) {
     if (argFields != null) {
       if (argFields is String) {
         orderByList.add('$argFields desc ');
@@ -3355,7 +3172,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   /// Example 1: argFields='field1, field2'
   ///
   /// Example 2: argFields = ['field1', 'field2']
-  Portfolio_stockFilterBuilder groupBy(dynamic argFields) {
+  PortfoliostockFilterBuilder groupBy(dynamic argFields) {
     if (argFields != null) {
       if (argFields is String) {
         groupByList.add(' $argFields ');
@@ -3375,7 +3192,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   /// Example 1: argFields='name, date'
   ///
   /// Example 2: argFields = ['name', 'date']
-  Portfolio_stockFilterBuilder having(dynamic argFields) {
+  PortfoliostockFilterBuilder having(dynamic argFields) {
     if (argFields != null) {
       if (argFields is String) {
         havingList.add(argFields);
@@ -3390,34 +3207,29 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     return this;
   }
 
-  Portfolio_stockField setField(
-      Portfolio_stockField field, String colName, DbType dbtype) {
-    return Portfolio_stockField(this)
+  PortfoliostockField setField(
+      PortfoliostockField field, String colName, DbType dbtype) {
+    return PortfoliostockField(this)
       ..param = DbParameter(
           dbType: dbtype,
           columnName: colName,
           wStartBlock: _addedBlocks.waitingStartBlock[_blockIndex]);
   }
 
-  Portfolio_stockField _id;
-  Portfolio_stockField get id {
+  PortfoliostockField _id;
+  PortfoliostockField get id {
     return _id = setField(_id, 'id', DbType.integer);
   }
 
-  Portfolio_stockField _portfoliosId;
-  Portfolio_stockField get portfoliosId {
+  PortfoliostockField _portfoliosId;
+  PortfoliostockField get portfoliosId {
     return _portfoliosId =
         setField(_portfoliosId, 'portfoliosId', DbType.integer);
   }
 
-  Portfolio_stockField _stocksId;
-  Portfolio_stockField get stocksId {
+  PortfoliostockField _stocksId;
+  PortfoliostockField get stocksId {
     return _stocksId = setField(_stocksId, 'stocksId', DbType.integer);
-  }
-
-  Portfolio_stockField _isDeleted;
-  Portfolio_stockField get isDeleted {
-    return _isDeleted = setField(_isDeleted, 'isDeleted', DbType.bool);
   }
 
   bool _getIsDeleted;
@@ -3498,7 +3310,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
         whereString += param.whereString;
       }
     }
-    if (Portfolio_stock._softDeleteActivated) {
+    if (Portfoliostock._softDeleteActivated) {
       if (whereString != '') {
         whereString =
             '${!_getIsDeleted ? 'ifnull(isDeleted,0)=0 AND' : ''} ($whereString)';
@@ -3517,27 +3329,19 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
       ..having = havingList.join(',');
   }
 
-  /// Deletes List<Portfolio_stock> bulk by query
+  /// Deletes List<Portfoliostock> bulk by query
   ///
   /// <returns>BoolResult res.success=Deleted, not res.success=Can not deleted
   Future<BoolResult> delete([bool hardDelete = false]) async {
     _buildParameters();
     var r = BoolResult();
 
-    if (Portfolio_stock._softDeleteActivated && !hardDelete) {
-      r = await _obj._mnPortfolio_stock.updateBatch(qparams, {'isDeleted': 1});
+    if (Portfoliostock._softDeleteActivated && !hardDelete) {
+      r = await _obj._mnPortfoliostock.updateBatch(qparams, {'isDeleted': 1});
     } else {
-      r = await _obj._mnPortfolio_stock.delete(qparams);
+      r = await _obj._mnPortfoliostock.delete(qparams);
     }
     return r;
-  }
-
-  /// Recover List<Portfolio_stock> bulk by query
-  Future<BoolResult> recover() async {
-    _getIsDeleted = true;
-    _buildParameters();
-    print('SQFENTITIY: recover Portfolio_stock bulk invoked');
-    return _obj._mnPortfolio_stock.updateBatch(qparams, {'isDeleted': 0});
   }
 
   /// using:
@@ -3549,12 +3353,12 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     _buildParameters();
     if (qparams.limit > 0 || qparams.offset > 0) {
       qparams.whereString =
-          'id IN (SELECT id from portfolio_stock ${qparams.whereString.isNotEmpty ? 'WHERE ${qparams.whereString}' : ''}${qparams.limit > 0 ? ' LIMIT ${qparams.limit}' : ''}${qparams.offset > 0 ? ' OFFSET ${qparams.offset}' : ''})';
+          'id IN (SELECT id from portfoliostock ${qparams.whereString.isNotEmpty ? 'WHERE ${qparams.whereString}' : ''}${qparams.limit > 0 ? ' LIMIT ${qparams.limit}' : ''}${qparams.offset > 0 ? ' OFFSET ${qparams.offset}' : ''})';
     }
-    return _obj._mnPortfolio_stock.updateBatch(qparams, values);
+    return _obj._mnPortfoliostock.updateBatch(qparams, values);
   }
 
-  /// This method always returns Portfolio_stock Obj if exist, otherwise returns null
+  /// This method always returns Portfoliostock Obj if exist, otherwise returns null
   ///
   /// bool preload: if true, loads all related child objects (Set preload to true if you want to load all fields related to child or parent)
   ///
@@ -3567,19 +3371,19 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   /// bool loadParents: if true, loads all parent objects until the object has no parent
 
   ///
-  /// <returns>List<Portfolio_stock>
-  Future<Portfolio_stock> toSingle(
+  /// <returns>List<Portfoliostock>
+  Future<Portfoliostock> toSingle(
       {bool preload = false,
       List<String> preloadFields,
       bool loadParents = false,
       List<String> loadedFields}) async {
     _pagesize = 1;
     _buildParameters();
-    final objFuture = _obj._mnPortfolio_stock.toList(qparams);
+    final objFuture = _obj._mnPortfoliostock.toList(qparams);
     final data = await objFuture;
-    Portfolio_stock obj;
+    Portfoliostock obj;
     if (data.isNotEmpty) {
-      obj = Portfolio_stock.fromMap(data[0] as Map<String, dynamic>);
+      obj = Portfoliostock.fromMap(data[0] as Map<String, dynamic>);
       // final List<String> _loadedFields = loadedFields ?? [];
 
       // RELATIONSHIPS PRELOAD
@@ -3611,23 +3415,22 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     return obj;
   }
 
-  /// This method returns int. [Portfolio_stock]
+  /// This method returns int. [Portfoliostock]
   ///
   /// <returns>int
   Future<int> toCount(
-      [VoidCallback Function(int c) portfolio_stockCount]) async {
+      [VoidCallback Function(int c) portfoliostockCount]) async {
     _buildParameters();
     qparams.selectColumns = ['COUNT(1) AS CNT'];
-    final portfolio_stocksFuture =
-        await _obj._mnPortfolio_stock.toList(qparams);
-    final int count = portfolio_stocksFuture[0]['CNT'] as int;
-    if (portfolio_stockCount != null) {
-      portfolio_stockCount(count);
+    final portfoliostocksFuture = await _obj._mnPortfoliostock.toList(qparams);
+    final int count = portfoliostocksFuture[0]['CNT'] as int;
+    if (portfoliostockCount != null) {
+      portfoliostockCount(count);
     }
     return count;
   }
 
-  /// This method returns List<Portfolio_stock> [Portfolio_stock]
+  /// This method returns List<Portfoliostock> [Portfoliostock]
   ///
   /// bool preload: if true, loads all related child objects (Set preload to true if you want to load all fields related to child or parent)
   ///
@@ -3640,24 +3443,24 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
   /// bool loadParents: if true, loads all parent objects until the object has no parent
 
   ///
-  /// <returns>List<Portfolio_stock>
-  Future<List<Portfolio_stock>> toList(
+  /// <returns>List<Portfoliostock>
+  Future<List<Portfoliostock>> toList(
       {bool preload = false,
       List<String> preloadFields,
       bool loadParents = false,
       List<String> loadedFields}) async {
     final data = await toMapList();
-    final List<Portfolio_stock> portfolio_stocksData =
-        await Portfolio_stock.fromMapList(data,
+    final List<Portfoliostock> portfoliostocksData =
+        await Portfoliostock.fromMapList(data,
             preload: preload,
             preloadFields: preloadFields,
             loadParents: loadParents,
             loadedFields: loadedFields,
             setDefaultValues: qparams.selectColumns == null);
-    return portfolio_stocksData;
+    return portfoliostocksData;
   }
 
-  /// This method returns Json String [Portfolio_stock]
+  /// This method returns Json String [Portfoliostock]
   Future<String> toJson() async {
     final list = <dynamic>[];
     final data = await toList();
@@ -3667,7 +3470,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     return json.encode(list);
   }
 
-  /// This method returns Json String. [Portfolio_stock]
+  /// This method returns Json String. [Portfoliostock]
   Future<String> toJsonWithChilds() async {
     final list = <dynamic>[];
     final data = await toList();
@@ -3677,15 +3480,15 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     return json.encode(list);
   }
 
-  /// This method returns List<dynamic>. [Portfolio_stock]
+  /// This method returns List<dynamic>. [Portfoliostock]
   ///
   /// <returns>List<dynamic>
   Future<List<dynamic>> toMapList() async {
     _buildParameters();
-    return await _obj._mnPortfolio_stock.toList(qparams);
+    return await _obj._mnPortfoliostock.toList(qparams);
   }
 
-  /// This method returns Primary Key List SQL and Parameters retVal = Map<String,dynamic>. [Portfolio_stock]
+  /// This method returns Primary Key List SQL and Parameters retVal = Map<String,dynamic>. [Portfoliostock]
   ///
   /// retVal['sql'] = SQL statement string, retVal['args'] = whereArguments List<dynamic>;
   ///
@@ -3696,7 +3499,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
       _buildParameters();
     }
     _retVal['sql'] =
-        'SELECT `id` FROM portfolio_stock WHERE ${qparams.whereString}';
+        'SELECT `id` FROM portfoliostock WHERE ${qparams.whereString}';
     _retVal['args'] = qparams.whereArguments;
     return _retVal;
   }
@@ -3709,7 +3512,7 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     }
     final List<int> idData = <int>[];
     qparams.selectColumns = ['id'];
-    final idFuture = await _obj._mnPortfolio_stock.toList(qparams);
+    final idFuture = await _obj._mnPortfoliostock.toList(qparams);
 
     final int count = idFuture.length;
     for (int i = 0; i < count; i++) {
@@ -3718,13 +3521,13 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     return idData;
   }
 
-  /// Returns List<dynamic> for selected columns. Use this method for 'groupBy' with min,max,avg..  [Portfolio_stock]
+  /// Returns List<dynamic> for selected columns. Use this method for 'groupBy' with min,max,avg..  [Portfoliostock]
   ///
   /// Sample usage: (see EXAMPLE 4.2 at https://github.com/hhtokpinar/sqfEntity#group-by)
   Future<List<dynamic>> toListObject() async {
     _buildParameters();
 
-    final objectFuture = _obj._mnPortfolio_stock.toList(qparams);
+    final objectFuture = _obj._mnPortfoliostock.toList(qparams);
 
     final List<dynamic> objectsData = <dynamic>[];
     final data = await objectFuture;
@@ -3737,12 +3540,12 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
 
   /// Returns List<String> for selected first column
   ///
-  /// Sample usage: await Portfolio_stock.select(columnsToSelect: ['columnName']).toListString()
+  /// Sample usage: await Portfoliostock.select(columnsToSelect: ['columnName']).toListString()
   Future<List<String>> toListString(
       [VoidCallback Function(List<String> o) listString]) async {
     _buildParameters();
 
-    final objectFuture = _obj._mnPortfolio_stock.toList(qparams);
+    final objectFuture = _obj._mnPortfoliostock.toList(qparams);
 
     final List<String> objectsData = <String>[];
     final data = await objectFuture;
@@ -3756,10 +3559,10 @@ class Portfolio_stockFilterBuilder extends SearchCriteria {
     return objectsData;
   }
 }
-// endregion Portfolio_stockFilterBuilder
+// endregion PortfoliostockFilterBuilder
 
-// region Portfolio_stockFields
-class Portfolio_stockFields {
+// region PortfoliostockFields
+class PortfoliostockFields {
   static TableField _fId;
   static TableField get id {
     return _fId = _fId ?? SqlSyntax.setField(_fId, 'id', DbType.integer);
@@ -3776,28 +3579,22 @@ class Portfolio_stockFields {
     return _fStocksId = _fStocksId ??
         SqlSyntax.setField(_fStocksId, 'stocksId', DbType.integer);
   }
-
-  static TableField _fIsDeleted;
-  static TableField get isDeleted {
-    return _fIsDeleted = _fIsDeleted ??
-        SqlSyntax.setField(_fIsDeleted, 'isDeleted', DbType.integer);
-  }
 }
-// endregion Portfolio_stockFields
+// endregion PortfoliostockFields
 
-//region Portfolio_stockManager
-class Portfolio_stockManager extends SqfEntityProvider {
-  Portfolio_stockManager()
+//region PortfoliostockManager
+class PortfoliostockManager extends SqfEntityProvider {
+  PortfoliostockManager()
       : super(DbModel(),
             tableName: _tableName,
             primaryKeyList: _primaryKeyList,
             whereStr: _whereStr);
-  static final String _tableName = 'portfolio_stock';
+  static final String _tableName = 'portfoliostock';
   static final List<String> _primaryKeyList = ['id'];
   static final String _whereStr = 'id=?';
 }
 
-//endregion Portfolio_stockManager
+//endregion PortfoliostockManager
 class DbModelSequenceManager extends SqfEntityProvider {
   DbModelSequenceManager() : super(DbModel());
 }
