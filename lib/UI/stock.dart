@@ -1,9 +1,8 @@
 import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'NewPort.dart';
+
 class StockPage extends StatefulWidget {
   @override
   _StockPageState createState() => _StockPageState();
@@ -16,7 +15,7 @@ class _StockPageState extends State<StockPage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black54,
-        title: Text(ticker, style: TextStyle(fontSize: 25.0, color: Colors.white))
+        title: Text("ITSA4", style: TextStyle(fontSize: 25.0, color: Colors.white))
       ),
       body: Padding(
         padding: EdgeInsets.all(20.0),
@@ -59,7 +58,7 @@ class _StockPageState extends State<StockPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: <Widget>[
                                 Text("Closing Price:", style: TextStyle(fontSize: 25.0)),
-                                Text("R\$ $price", style: TextStyle(fontSize: 25.0)),
+                                Text("R\$ 5.50", style: TextStyle(fontSize: 25.0)),
                             ],
                           )),
                           Padding(padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 0.0),
@@ -67,7 +66,7 @@ class _StockPageState extends State<StockPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
                               Text("Variation:", style: TextStyle(fontSize: 20.0, color: Colors.black87)),
-                              Text("$variation %", style: TextStyle(fontSize: 20.0, color: Colors.red[900]))
+                              Text("5 %", style: TextStyle(fontSize: 20.0, color: Colors.red[900]))
                             ],
                           ))
                         ],

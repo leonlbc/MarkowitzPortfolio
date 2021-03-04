@@ -11,7 +11,7 @@ const tableStocks = SqfEntityTable(
     tableName: 'stocks',
     primaryKeyName: 'id',
     primaryKeyType: PrimaryKeyType.integer_auto_incremental,
-    useSoftDeleting: true,
+    useSoftDeleting: false,
     modelName: 'stock',
     fields: [
       SqfEntityField('ticker', DbType.text),
@@ -25,7 +25,7 @@ const tablePortfolios = SqfEntityTable(
     tableName: 'portfolios',
     primaryKeyName: 'id',
     primaryKeyType: PrimaryKeyType.integer_auto_incremental,
-    useSoftDeleting: true,
+    useSoftDeleting: false,
     modelName: 'portfolio',
     fields: [
       SqfEntityField('name', DbType.text),
@@ -33,10 +33,10 @@ const tablePortfolios = SqfEntityTable(
 );
 
 const tablePortfolioStocks = SqfEntityTable(
-    tableName: 'portfolio_stock',
+    tableName: 'portfoliostock',
     primaryKeyName: 'id',
     primaryKeyType: PrimaryKeyType.integer_auto_incremental,
-    useSoftDeleting: true,
+    useSoftDeleting: false,
     modelName: null,
     fields: [
       SqfEntityFieldRelationship(
