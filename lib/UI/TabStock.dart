@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:witz/UI/stock.dart';
+import 'package:witz/UI/StockInfo.dart';
 
 import 'NewPort.dart';
 
@@ -30,9 +30,9 @@ class _TabStockState extends State<TabStock> {
                               mainAxisAlignment: MainAxisAlignment
                                   .spaceBetween,
                               children: <Widget>[
-                                Text("$ticker", style: TextStyle(
+                                Text("", style: TextStyle(
                                     fontSize: 25.0),),
-                                Text("$price", style: TextStyle(
+                                Text("", style: TextStyle(
                                     fontSize: 25.0))
                               ],
                             ),
@@ -40,9 +40,9 @@ class _TabStockState extends State<TabStock> {
                               mainAxisAlignment: MainAxisAlignment
                                   .spaceBetween,
                               children: <Widget>[
-                                Text("$name", style: TextStyle(
+                                Text("", style: TextStyle(
                                     fontSize: 20.0)),
-                                Text("$variation%",
+                                Text("",
                                     style: TextStyle(
                                         fontSize: 20.0,
                                         color: Colors.red[900]))

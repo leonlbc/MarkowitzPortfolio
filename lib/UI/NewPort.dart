@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:witz/UI/Navigation.dart';
 import 'package:witz/models/model.dart';
-import 'HomePage.dart';
-import 'package:witz/verification_exception.dart';
+import 'package:witz/glitch/VerificationException.dart';
+import 'package:witz/models/StockApi.dart';
 
 class NewPortfolioPage extends StatefulWidget {
   @override
@@ -12,32 +11,11 @@ class NewPortfolioPage extends StatefulWidget {
 }
 
 class _NewPortfolioPageState extends State<NewPortfolioPage> {
+  final api = StockApi();
+
   String portfolioName;
   TextEditingController portfolioNameController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  dynamic _search;
-  dynamic name;
-  dynamic ticker;
-  dynamic price;
-  dynamic variation;
-  var stockList = List<Stock>();
-
-  Future<Map> getData() async {
-    if (_search != null && _search.toString().isNotEmpty) {
-      print(_search);
-      http.Response response = await http.get(
-          "https://api.hgbrasil.com/finance/stock_price?key=aeedac9c&symbol=$_search");
-      return json.decode(response.body);
-    } else {
-      return null;
-    }
-  }
+  final _portfolioNameFormKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +36,7 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
               ),
               onPressed: () {
                 portfolioName = portfolioNameController.text;
-                _prepareToSave(stockList, portfolioName);
+                _prepareToSave(api.stockList, portfolioName);
                 _moveToHome(context);
               }),
         ],
@@ -68,7 +46,7 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 5.0),
             child: Form(
-              key: _formKey,
+              key: _portfolioNameFormKey,
               child: Column(children: <Widget>[
                 TextFormField(
                   controller: portfolioNameController,
@@ -111,21 +89,20 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                 ),
                 onSubmitted: (text) {
                   setState(() {
-                    _search = text.toUpperCase();
+                    api.search = text.toUpperCase();
                   });
-                  if (_search != null) {
-                    //Rever essa condicional
-                    getData();
+                  if (api.search != null) {
+                    api.getData(api.search);
                   }
                 }),
           ),
           Expanded(
               child: FutureBuilder<Map>(
-                  future: getData(),
+                  future: api.getData(api.search),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
                       return ListView.builder(
-                          itemCount: stockList.length,
+                          itemCount: api.stockList.length,
                           itemBuilder: (context, index) {
                             return Padding(
                                 padding:
@@ -147,12 +124,12 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                                                       .spaceBetween,
                                               children: <Widget>[
                                                 Text(
-                                                  stockList[index].name,
+                                                  api.stockList[index].name,
                                                   style:
                                                       TextStyle(fontSize: 15.0),
                                                 ),
                                                 Text(
-                                                    stockList[index]
+                                                    api.stockList[index]
                                                         .price
                                                         .toString(),
                                                     style: TextStyle(
@@ -164,11 +141,11 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: <Widget>[
-                                                Text(stockList[index].ticker,
+                                                Text(api.stockList[index].ticker,
                                                     style: TextStyle(
                                                         fontSize: 15.0)),
                                                 Text(
-                                                  stockList[index]
+                                                  api.stockList[index]
                                                       .variation
                                                       .toString(),
                                                   style: TextStyle(
@@ -183,16 +160,15 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                     } else if (snapshot.hasData) {
                       print(snapshot.data);
                       if (snapshot.data != null) {
-                        _saveStockFields(snapshot);
-                        _buildStock(stockList);
+                        api.saveStockFields(snapshot);
+                        _buildStock(api.stockList);
                       }
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
                       //substituir por alert
-
                     }
                     return ListView.builder(
-                        itemCount: stockList.length,
+                        itemCount: api.stockList.length,
                         itemBuilder: (context, index) {
                           return Padding(
                               padding:
@@ -212,12 +188,12 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                                                 MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
                                               Text(
-                                                stockList[index].name,
+                                                api.stockList[index].name,
                                                 style:
                                                     TextStyle(fontSize: 15.0),
                                               ),
                                               Text(
-                                                  stockList[index]
+                                                  api.stockList[index]
                                                       .price
                                                       .toString(),
                                                   style:
@@ -228,11 +204,11 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
-                                              Text(stockList[index].ticker,
+                                              Text(api.stockList[index].ticker,
                                                   style: TextStyle(
                                                       fontSize: 15.0)),
                                               Text(
-                                                  stockList[index]
+                                                  api.stockList[index]
                                                       .variation
                                                       .toString(),
                                                   style: TextStyle(
@@ -249,54 +225,35 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
     );
   }
 
-  _saveStockFields(snapshot) {
-    name = snapshot.data["results"]["$_search"]["name"];
-    ticker = snapshot.data["results"]["$_search"]["symbol"];
-    price = snapshot.data["results"]["$_search"]["price"];
-    variation = snapshot.data["results"]["$_search"]["change_percent"];
-  }
 
   _buildStock(stockList) {
-    var stock = Stock.withFields(ticker, name, price, variation);
-    bool exists = stockList.any((stock) => stock.ticker == ticker);
-    //Check if stock is dupe => com essa API usamos o stock.price p/ identificar erro
+    var stock = Stock.withFields(api.ticker, api.name, api.price, api.variation);
+    bool exists = api.stockList.any((stock) => stock.ticker == api.ticker);
     if (exists == false &&
         stock.price != null &&
         stock.variation != null &&
         stock.ticker != null) {
-      stockList.add(stock);
+      api.stockList.add(stock);
     } else {
-      //FIX
-      return Text(
-        "The stock was already added",
-        style: TextStyle(color: Colors.white),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("This stock was already added"),
+      ),);
     }
   }
 
   _prepareToSave(List stockList, String portfolioName) {
-    if (_formKey.currentState.validate()) {
+    if (_portfolioNameFormKey.currentState.validate()) {
     try {
-      if (stockList.length == 0) {
+      if (api.stockList.length == 0) {
         throw VerificationException("Add at least one stock");
       }
        else {
-        _saveToDb(portfolioName, stockList);
+        _saveToDb(portfolioName, api.stockList);
       }
     } catch (e) {
-      return showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            bool manuallyClosed = false;
-            Future.delayed(Duration(seconds: 3)).then((_) {
-              if (!manuallyClosed) {
-                Navigator.of(context).pop();
-              }
-            });
-            return AlertDialog(
-              title: Text(e.toString()),
-            );
-          });
+      return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+      ),);
     }
     }
   }
@@ -304,7 +261,7 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
   _saveToDb(String pName, List stockList) async {
     await Portfolio.withFields(pName).save().then((newPortfolioId) {
       print("Saved Portfolio $portfolioName");
-      stockList.forEach((stock) async {
+      api.stockList.forEach((stock) async {
         await stock.save().then((stockId) async {
           print("Saved ${stock.ticker} to $portfolioName");
           await Portfoliostock.withFields(newPortfolioId, stockId).save();
@@ -313,11 +270,10 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
     });
   }
 
-  //FIX
-  Future _moveToHome(context) async {
-    //Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-    return AlertDialog(
-      title: Text("Portfolio Saved"),
-    );
+   _moveToHome(context) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Navigation()));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text("Created Portfolio"),
+    ),);
   }
 }

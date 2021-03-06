@@ -4,15 +4,19 @@ import 'package:witz/UI/MonteCarlo.dart';
 import 'package:witz/UI/NewPort.dart';
 
 class Navigation extends StatefulWidget {
+  final currentIndex;
+
+  const Navigation({Key key, this.currentIndex}) : super(key: key);
+
   @override
   _NavigationState createState() => _NavigationState();
 }
 
 class _NavigationState extends State<Navigation> {
 
-  int _indexStart = 1;
+  int _currentIndex = 1;
 
-  final List<Widget> _telas = [
+  final List<Widget> _pages = [
     MonteCarloPage(),
     HomePage(),
     NewPortfolioPage(),
@@ -20,18 +24,32 @@ class _NavigationState extends State<Navigation> {
 
   void onTappedTab(int index) {
     setState(() {
-      _indexStart = index;
+      _currentIndex = index;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.currentIndex != null){
+      _currentIndex = widget.currentIndex;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.black54,
-        body: _telas[_indexStart],
+        body: _pages[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
+
             backgroundColor: Colors.black54,
-            currentIndex: _indexStart,
+            currentIndex: _currentIndex,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            selectedIconTheme: IconThemeData(
+              size: 32,
+            ),
             onTap: onTappedTab,
             items: [
               BottomNavigationBarItem(
@@ -39,21 +57,19 @@ class _NavigationState extends State<Navigation> {
                   Icons.stacked_line_chart,
                   color: Colors.white,
                 ),
-                title:
-                Text("Monte-Carlo", style: TextStyle(color: Colors.white)),
-              ),
+                label: "CAPM"
+                ),
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.home,
                   color: Colors.white,
                 ),
-                title: Text("Home", style: TextStyle(color: Colors.white)),
+                label: "Home"
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.add_circle_outline_outlined,
                     color: Colors.white),
-                title: Text("New portfolio",
-                    style: TextStyle(color: Colors.white)),
+                label: "New Portfolio"
               ),
             ])
     );
