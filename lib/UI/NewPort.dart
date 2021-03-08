@@ -4,6 +4,7 @@ import 'package:witz/UI/Navigation.dart';
 import 'package:witz/models/model.dart';
 import 'package:witz/glitch/VerificationException.dart';
 import 'package:witz/models/StockApi.dart';
+import 'package:witz/controllers/DatabaseController.dart';
 
 class NewPortfolioPage extends StatefulWidget {
   @override
@@ -12,10 +13,24 @@ class NewPortfolioPage extends StatefulWidget {
 
 class _NewPortfolioPageState extends State<NewPortfolioPage> {
   final api = StockApi();
+  final dbController = DatabaseController();
+  var getData;
 
   String portfolioName;
   TextEditingController portfolioNameController = TextEditingController();
   final _portfolioNameFormKey = GlobalKey<FormState>();
+
+  scaffoldMBuilder(message){
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+    ),);
+  }
+
+  @override
+  void initState() {
+    getData = api.getData;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +51,7 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
               ),
               onPressed: () {
                 portfolioName = portfolioNameController.text;
-                _prepareToSave(api.stockList, portfolioName);
+                _portfolioCheck(api.stockList, portfolioName);
                 _moveToHome(context);
               }),
         ],
@@ -91,14 +106,11 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                   setState(() {
                     api.search = text.toUpperCase();
                   });
-                  if (api.search != null) {
-                    api.getData(api.search);
-                  }
                 }),
           ),
           Expanded(
-              child: FutureBuilder<Map>(
-                  future: api.getData(api.search),
+              child: FutureBuilder(
+                  future: getData(api.search),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
                       return ListView.builder(
@@ -158,10 +170,9 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
                                         ))));
                           });
                     } else if (snapshot.hasData) {
-                      print(snapshot.data);
                       if (snapshot.data != null) {
-                        api.saveStockFields(snapshot);
-                        _buildStock(api.stockList);
+                        api.saveStockFields(snapshot.data, api.search);
+                        _validateStock(api.stockList);
                       }
                     } else if (snapshot.hasError) {
                       return Text("${snapshot.error}");
@@ -226,8 +237,8 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
   }
 
 
-  _buildStock(stockList) {
-    var stock = Stock.withFields(api.ticker, api.name, api.price, api.variation);
+  _validateStock(stockList) {
+    var stock = Stock.withFields(api.ticker, api.name, api.price, api.variation, null);
     bool exists = api.stockList.any((stock) => stock.ticker == api.ticker);
     if (exists == false &&
         stock.price != null &&
@@ -235,45 +246,34 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
         stock.ticker != null) {
       api.stockList.add(stock);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("This stock was already added"),
-      ),);
+      print(stock.toMap());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scaffoldMBuilder("This stock was already added");
+      });
     }
   }
 
-  _prepareToSave(List stockList, String portfolioName) {
+  _portfolioCheck(List stockList, String portfolioName) {
     if (_portfolioNameFormKey.currentState.validate()) {
     try {
       if (api.stockList.length == 0) {
         throw VerificationException("Add at least one stock");
       }
        else {
-        _saveToDb(portfolioName, api.stockList);
+        dbController.saveToDb(portfolioName, api.stockList);
       }
     } catch (e) {
-      return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e.toString()),
-      ),);
-    }
-    }
-  }
-
-  _saveToDb(String pName, List stockList) async {
-    await Portfolio.withFields(pName).save().then((newPortfolioId) {
-      print("Saved Portfolio $portfolioName");
-      api.stockList.forEach((stock) async {
-        await stock.save().then((stockId) async {
-          print("Saved ${stock.ticker} to $portfolioName");
-          await Portfoliostock.withFields(newPortfolioId, stockId).save();
-        });
+      return WidgetsBinding.instance.addPostFrameCallback((_) {
+        scaffoldMBuilder(e.toString());
       });
-    });
+    }
+    }
   }
 
    _moveToHome(context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scaffoldMBuilder("Created Portfolio");
+    });
     Navigator.push(context, MaterialPageRoute(builder: (context) => Navigation()));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text("Created Portfolio"),
-    ),);
   }
 }
