@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:witz/glitch/VerificationException.dart';
 
 class StockApi {
 
@@ -10,7 +11,7 @@ class StockApi {
   double variation;
   var stockList = [];
 
-  Future<Map> getData(_search) async {
+  getData(_search) async {
     if (_search != null && _search.toString().isNotEmpty) {
       print(_search);
       http.Response response = await http.get(
@@ -21,10 +22,17 @@ class StockApi {
     }
   }
 
-  saveStockFields(snapshot) {
-    name = snapshot.data["results"]["$search"]["name"];
-    ticker = snapshot.data["results"]["$search"]["symbol"];
-    price = snapshot.data["results"]["$search"]["price"];
-    variation = snapshot.data["results"]["$search"]["change_percent"];
+  saveStockFields(data, search) {
+    try{
+      if (data["results"]["$search"]["price"] != null) {
+        name = data["results"]["$search"]["name"];
+        ticker = data["results"]["$search"]["symbol"];
+        price = data["results"]["$search"]["price"];
+        variation = data["results"]["$search"]["change_percent"];
+      }
+    }
+    catch(e){
+      VerificationException("Stock Not Found");
+    }
   }
 }

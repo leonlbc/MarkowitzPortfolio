@@ -1,25 +1,10 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:sqfentity/sqfentity.dart';
 import 'package:sqfentity_gen/sqfentity_gen.dart';
 
 part 'model.g.dart';
-
-const tableStocks = SqfEntityTable(
-    tableName: 'stocks',
-    primaryKeyName: 'id',
-    primaryKeyType: PrimaryKeyType.integer_auto_incremental,
-    useSoftDeleting: false,
-    modelName: 'stock',
-    fields: [
-      SqfEntityField('ticker', DbType.text),
-      SqfEntityField('name', DbType.text),
-      SqfEntityField('price', DbType.real),
-      SqfEntityField('variation', DbType.real)
-    ]
-);
 
 const tablePortfolios = SqfEntityTable(
     tableName: 'portfolios',
@@ -32,18 +17,19 @@ const tablePortfolios = SqfEntityTable(
     ]
 );
 
-const tablePortfolioStocks = SqfEntityTable(
-    tableName: 'portfoliostock',
+const tableStocks = SqfEntityTable(
+    tableName: 'stocks',
     primaryKeyName: 'id',
     primaryKeyType: PrimaryKeyType.integer_auto_incremental,
     useSoftDeleting: false,
-    modelName: null,
+    modelName: 'stock',
     fields: [
+      SqfEntityField('ticker', DbType.text),
+      SqfEntityField('name', DbType.text),
+      SqfEntityField('price', DbType.real),
+      SqfEntityField('variation', DbType.real),
       SqfEntityFieldRelationship(
           parentTable: tablePortfolios,
-          deleteRule: DeleteRule.CASCADE),
-      SqfEntityFieldRelationship(
-          parentTable: tableStocks,
           deleteRule: DeleteRule.CASCADE),
     ]
 );
@@ -51,6 +37,6 @@ const tablePortfolioStocks = SqfEntityTable(
 @SqfEntityBuilder(dbModel)
 const dbModel = SqfEntityModel(
     databaseName: 'main.db',
-    databaseTables: [tableStocks, tablePortfolios, tablePortfolioStocks],
+    databaseTables: [tableStocks, tablePortfolios],
     bundledDatabasePath: null
 );
