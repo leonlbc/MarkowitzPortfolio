@@ -12,7 +12,7 @@ void main() async {
   if (dbInitialized) {
     dbController.sample();
     runApp(MaterialApp(
-      home: Navigation(),
+      home: Navigation(dropdownInitValue: 1),
       debugShowCheckedModeBanner: false,
     ));
   }
