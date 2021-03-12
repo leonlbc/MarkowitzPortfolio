@@ -5,8 +5,9 @@ import 'package:witz/UI/NewPort.dart';
 
 class Navigation extends StatefulWidget {
   final currentIndex;
+  final dropdownInitValue;
 
-  const Navigation({Key key, this.currentIndex}) : super(key: key);
+  const Navigation({Key key, this.currentIndex, @required this.dropdownInitValue}) : super(key: key);
 
   @override
   _NavigationState createState() => _NavigationState();
@@ -15,25 +16,29 @@ class Navigation extends StatefulWidget {
 class _NavigationState extends State<Navigation> {
 
   int _currentIndex = 1;
+  var ddInitValue;
+  List<Widget> _pages;
 
-  final List<Widget> _pages = [
-    MonteCarloPage(),
-    HomePage(),
-    NewPortfolioPage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.currentIndex != null){
+      _currentIndex = widget.currentIndex;
+    }
+
+    ddInitValue = widget.dropdownInitValue;
+    _pages = [
+      MonteCarloPage(),
+      HomePage(dropdownInitValue: ddInitValue),
+      NewPortfolioPage(),
+    ];
+  }
 
   void onTappedTab(int index) {
     setState(() {
       _currentIndex = index;
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.currentIndex != null){
-      _currentIndex = widget.currentIndex;
-    }
   }
 
   @override

@@ -17,6 +17,7 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
   var getData;
 
   String portfolioName;
+  var portfolioId;
   TextEditingController portfolioNameController = TextEditingController();
   final _portfolioNameFormKey = GlobalKey<FormState>();
 
@@ -51,8 +52,9 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
               ),
               onPressed: () {
                 portfolioName = portfolioNameController.text;
-                _portfolioCheck(api.stockList, portfolioName);
-                _moveToHome(context);
+                _portfolioCheck(api.stockList, portfolioName).then((_) {
+                  _moveToHome(context);
+                });
               }),
         ],
       ),
@@ -253,14 +255,14 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
     }
   }
 
-  _portfolioCheck(List stockList, String portfolioName) {
+  _portfolioCheck(List stockList, String portfolioName) async {
     if (_portfolioNameFormKey.currentState.validate()) {
     try {
       if (api.stockList.length == 0) {
         throw VerificationException("Add at least one stock");
       }
        else {
-        dbController.saveToDb(portfolioName, api.stockList);
+        portfolioId = await dbController.saveToDb(portfolioName, api.stockList);
       }
     } catch (e) {
       return WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -274,6 +276,6 @@ class _NewPortfolioPageState extends State<NewPortfolioPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scaffoldMBuilder("Created Portfolio");
     });
-    Navigator.push(context, MaterialPageRoute(builder: (context) => Navigation()));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Navigation(dropdownInitValue: portfolioId)));
   }
 }

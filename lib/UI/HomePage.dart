@@ -5,6 +5,10 @@ import 'package:witz/UI/TabStock.dart';
 import 'package:witz/controllers/DatabaseController.dart';
 
 class HomePage extends StatefulWidget {
+  final dropdownInitValue;
+
+  const HomePage({Key key, @required this.dropdownInitValue}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -19,6 +23,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void initState() {
+    dropdownValue = widget.dropdownInitValue;
     _tabController = new TabController(length: 3, vsync: this);
     getPortfolios = dbController.getAllPortfolios();
     super.initState();
